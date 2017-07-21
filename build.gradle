@@ -24,7 +24,7 @@ dependencies {
 	compile "cz.adamh.utils:native-utils:1.0-SNAPSHOT"
 	
 	// json lib
-	compile "com.beust:klaxon:0.31-SNAPSHOT"
+	compile "com.beust:klaxon:0.+"
 	
 	// logging lib
 	compile "org.slf4j:slf4j-api:1.7.+"
