@@ -1,0 +1,111 @@
+group 'msrd0.matrix'
+
+buildscript {
+	repositories {
+		mavenLocal()
+		jcenter()
+	}
+	dependencies {
+		// jfrog artifactory
+		classpath "org.jfrog.buildinfo:build-info-extractor-gradle:+"
+	}
+}
+
+apply plugin: 'java'
+
+repositories {
+	mavenLocal()
+	jcenter()
+	maven { url "https://msrd0.duckdns.org/artifactory/gradle" }
+}
+
+dependencies {
+	// native utils
+	compile "cz.adamh.utils:native-utils:1.0-SNAPSHOT"
+	
+	// json lib
+	compile "com.beust:klaxon:0.31-SNAPSHOT"
+	
+	// logging lib
+	compile "org.slf4j:slf4j-api:1.7.+"
+}
+
+sourceSets {
+	main {
+		java.srcDirs = ['jni/java']
+		resources.srcDirs = ['res/']
+	}
+}
+
+def olmLibVersion = "2.2.2"
+version "$olmLibVersion-$matrix_client_olm_rel"
+
+def cmakeDirectory = projectDir.toString() + "/jni/native"
+def olmDirectory = projectDir.toString() + "/olm"
+def buildDirectory = new File(getBuildDir().toString() + "/cmake")
+buildDirectory.mkdirs()
+
+task generateMakefiles(type: Exec, description: "Generate Makefiles") {
+	workingDir = buildDirectory
+	commandLine "cmake", "-DOLM_SOURCE=" + olmDirectory, "-DOLM_VERSION=" + olmLibVersion, "-DCMAKE_INSTALL_PREFIX=/", cmakeDirectory
+}
+
+task buildNative(type: Exec, description: "Build Java Native", dependsOn: ":generateMakefiles") {
+	workingDir = buildDirectory
+	commandLine "make"
+}
+
+task installNative(type: Exec, description: "Install Java Native", dependsOn: ":buildNative") {
+	workingDir = buildDirectory
+	commandLine "make", "install", "DESTDIR=" + projectDir.toString()
+}
+
+compileJava.dependsOn installNative
+
+
+apply plugin: 'com.jfrog.artifactory'
+apply plugin: 'maven-publish'
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+			pom.withXml {
+				asNode()
+					.appendNode('licenses')
+						.appendNode('license')
+							.appendNode('name', "Apache License, Version 2.0")
+								.parent()
+							.appendNode('url', "https://apache.org/licenses/LICENSE-2.0.txt")
+								.parent()
+							.appendNode('distribution', "repo")
+								.parent()
+							.appendNode('comments', "An open source license that alows proprietary use")
+			}
+		}
+	}
+}
+
+artifactory {
+	contextUrl = 'https://msrd0.duckdns.org/artifactory'
+	resolve {
+		repository {
+			repoKey = 'gradle'
+		}
+	}
+	publish {
+		repository {
+			repoKey = 'local'
+			username = 'gitlab-ci'
+			password = System.getenv("ARTIFACTORY_PASSWORD")
+			maven = true
+		}
+		defaults {
+			publications('mavenJava')
+		}
+	}
+}
+
+artifactoryPublish {
+	dependsOn jar
+}
