@@ -1,12 +1,10 @@
 image: msrd0/gradle
 
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
-
 build:
   stage: build
   before_script:
-    - sudo apk add --no-cache ca-certificates cmake g++ gcc make
+    - sudo apk add --no-cache ca-certificates cmake g++ gcc git make
+    - git submodule update --init
     - mkdir -p .gradle
   script:
     - GRADLE_USER_HOME=.gradle gradle assemble
@@ -17,8 +15,6 @@ build:
 
 deploy:
   stage: deploy
-  before_script:
-    - sudo apk add --no-cache ca-certificates
   script:
     - GRADLE_USER_HOME=.gradle gradle artifactoryPublish
   only:
