@@ -1,0 +1,17 @@
+# gradle stuff
+.gradle/
+build/
+
+# intellij stuff
+.idea/
+*.iml
+
+# kde stuff
+.directory
+
+# emacs stuff
+*~
+\#*#
+
+# native
+*.so
