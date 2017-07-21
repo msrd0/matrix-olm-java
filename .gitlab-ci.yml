@@ -6,7 +6,7 @@ variables:
 build:
   stage: build
   before_script:
-    - sudo apk add --no-cache cmake g++ gcc make
+    - sudo apk add --no-cache ca-certificates cmake g++ gcc make
     - mkdir -p .gradle
   script:
     - GRADLE_USER_HOME=.gradle gradle assemble
@@ -17,6 +17,8 @@ build:
 
 deploy:
   stage: deploy
+  before_script:
+    - sudo apk add --no-cache ca-certificates
   script:
     - GRADLE_USER_HOME=.gradle gradle artifactoryPublish
   only:
