@@ -3,7 +3,7 @@ image: msrd0/gradle
 build:
   stage: build
   before_script:
-    - sudo apk add --no-cache gcc g++ cmake
+    - sudo apk add --no-cache cmake g++ gcc make
     - mkdir -p .gradle
   script:
     - GRADLE_USER_HOME=.gradle gradle assemble
