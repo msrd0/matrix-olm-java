@@ -19,7 +19,7 @@ package org.matrix.olm;
 import java.io.*;
 import java.util.logging.Logger;
 
-import cz.adamh.utils.NativeUtils;
+import msrd0.jni.jni_multilib.JniLoader;
 
 /**
  * Olm SDK entry point class.<br> An OlmManager instance must be created at first to enable native library load.
@@ -36,8 +36,7 @@ public class OlmManager
 	{
 		try
 		{
-			NativeUtils.loadLibraryFromJar("/libolm.so");
-			NativeUtils.loadLibraryFromJar("/libolmjava.so");
+			JniLoader.loadLibrary("olm");
 		}
 		catch (IOException e)
 		{
