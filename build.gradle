@@ -24,7 +24,7 @@ dependencies {
 	compile "cz.adamh.utils:native-utils:1.0-SNAPSHOT"
 	
 	// json lib
-	compile "com.beust:klaxon:0.+"
+	compile "com.beust:klaxon:0.31-SNAPSHOT"
 	
 	// logging lib
 	compile "org.slf4j:slf4j-api:1.7.+"
@@ -38,7 +38,7 @@ sourceSets {
 }
 
 def olmLibVersion = "2.2.2"
-version "$olmLibVersion-$matrix_client_olm_rel"
+version "$olmLibVersion-$matrix_olm_java_rel"
 
 def cmakeDirectory = projectDir.toString() + "/jni/native"
 def olmDirectory = projectDir.toString() + "/olm"
