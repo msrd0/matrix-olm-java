@@ -1,5 +1,8 @@
 image: msrd0/gradle
 
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
 build:
   stage: build
   before_script:
