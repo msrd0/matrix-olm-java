@@ -1,0 +1,20 @@
+image: msrd0/gradle
+
+build:
+  stage: build
+  before_script:
+    - sudo apk add --no-cache gcc g++ cmake
+    - mkdir -p .gradle
+  script:
+    - GRADLE_USER_HOME=.gradle gradle assemble
+  artifacts:
+    paths:
+      - build/
+      - .gradle/
+
+deploy:
+  stage: deploy
+  script:
+    - GRADLE_USER_HOME=.gradle gradle artifactoryPublish
+  only:
+    - master
