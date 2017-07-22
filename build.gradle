@@ -59,9 +59,11 @@ jni {
 	]
 	
 	arch = [
-	        new Arch(OS.LINUX, Architecture.X86_64),
+			new Arch(OS.LINUX, Architecture.X86_64),
 			new Arch(OS.LINUX, Architecture.X86),
-			new Arch(OS.LINUX, Architecture.ARMv7)
+			new Arch(OS.LINUX, Architecture.ARMv7),
+			new Arch(OS.WINDOWS, Architecture.X86_64),
+			new Arch(OS.WINDOWS, Architecture.X86)
 	]
 }
 
