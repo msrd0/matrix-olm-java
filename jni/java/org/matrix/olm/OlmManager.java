@@ -17,9 +17,10 @@
 package org.matrix.olm;
 
 import java.io.*;
-import java.util.logging.Logger;
 
 import msrd0.jni.jni_multilib.JniLoader;
+
+import org.slf4j.LoggerFactory;
 
 /**
  * Olm SDK entry point class.<br> An OlmManager instance must be created at first to enable native library load.
@@ -27,7 +28,7 @@ import msrd0.jni.jni_multilib.JniLoader;
  */
 public class OlmManager
 {
-	private static final Logger LOGGER = Logger.getLogger(OlmManager.class.getName());
+	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(OlmManager.class.getName());
 	
 	/**
 	 * Constructor.
@@ -40,7 +41,7 @@ public class OlmManager
 		}
 		catch (IOException e)
 		{
-			LOGGER.severe("Exception loadLibrary() - Msg=" + e.getMessage());
+			LOGGER.error("Exception loadLibrary() - Msg=" + e.getMessage());
 		}
 	}
 	

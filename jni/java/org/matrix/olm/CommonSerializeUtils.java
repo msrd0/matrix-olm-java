@@ -17,14 +17,15 @@
 package org.matrix.olm;
 
 import java.io.*;
-import java.util.logging.Logger;
+
+import org.slf4j.LoggerFactory;
 
 /**
  * Helper class dedicated to serialization mechanism (template method pattern).
  */
 abstract class CommonSerializeUtils
 {
-	private static final Logger LOGGER = Logger.getLogger(CommonSerializeUtils.class.getName());
+	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CommonSerializeUtils.class);
 	
 	/**
 	 * Kick off the serialization mechanism.

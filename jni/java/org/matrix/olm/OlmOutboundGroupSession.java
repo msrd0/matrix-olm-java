@@ -17,7 +17,8 @@
 package org.matrix.olm;
 
 import java.io.*;
-import java.util.logging.Logger;
+
+import org.slf4j.LoggerFactory;
 
 /**
  * Class used to create an outbound a <a href="http://matrix.org/docs/guides/e2e_implementation.html#starting-a-megolm-session">Megolm session</a>.<br>
@@ -29,7 +30,7 @@ import java.util.logging.Logger;
 public class OlmOutboundGroupSession extends CommonSerializeUtils implements Serializable
 {
 	private static final long serialVersionUID = -3133097431283604416L;
-	private static final Logger LOGGER = Logger.getLogger(OlmOutboundGroupSession.class.getName());
+	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(OlmOutboundGroupSession.class);
 	
 	/**
 	 * Session Id returned by JNI.<br>
@@ -112,7 +113,7 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 		}
 		catch (Exception e)
 		{
-			LOGGER.severe("## sessionIdentifier() failed " + e.getMessage());
+			LOGGER.error("## sessionIdentifier() failed " + e.getMessage());
 			throw new OlmException(OlmException.EXCEPTION_CODE_OUTBOUND_GROUP_SESSION_IDENTIFIER, e.getMessage());
 		}
 	}
@@ -164,7 +165,7 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 		}
 		catch (Exception e)
 		{
-			LOGGER.severe("## sessionKey() failed " + e.getMessage());
+			LOGGER.error("## sessionKey() failed " + e.getMessage());
 			throw new OlmException(OlmException.EXCEPTION_CODE_OUTBOUND_GROUP_SESSION_KEY, e.getMessage());
 		}
 	}
@@ -203,7 +204,7 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 			}
 			catch (Exception e)
 			{
-				LOGGER.severe("## encryptMessage() failed " + e.getMessage());
+				LOGGER.error("## encryptMessage() failed " + e.getMessage());
 				throw new OlmException(OlmException.EXCEPTION_CODE_OUTBOUND_GROUP_ENCRYPT_MESSAGE, e.getMessage());
 			}
 		}
@@ -266,7 +267,7 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 		// sanity check
 		if (null == aErrorMsg)
 		{
-			LOGGER.severe("## serialize(): invalid parameter - aErrorMsg=null");
+			LOGGER.error("## serialize(): invalid parameter - aErrorMsg=null");
 		}
 		else if (null == aKey)
 		{
@@ -280,7 +281,7 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 			}
 			catch (Exception e)
 			{
-				LOGGER.severe("## serialize(): failed " + e.getMessage());
+				LOGGER.error("## serialize(): failed " + e.getMessage());
 				aErrorMsg.append(e.getMessage());
 			}
 		}
@@ -315,7 +316,7 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 		{
 			if ((null == aSerializedData) || (null == aKey))
 			{
-				LOGGER.severe("## deserialize(): invalid input parameters");
+				LOGGER.error("## deserialize(): invalid input parameters");
 				errorMsg = "invalid input parameters";
 			}
 			else
@@ -325,7 +326,7 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 		}
 		catch (Exception e)
 		{
-			LOGGER.severe("## deserialize() failed " + e.getMessage());
+			LOGGER.error("## deserialize() failed " + e.getMessage());
 			errorMsg = e.getMessage();
 		}
 		

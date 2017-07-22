@@ -17,20 +17,16 @@
 package org.matrix.olm;
 
 import java.security.SecureRandom;
-import java.util.*;
-import java.util.logging.Logger;
 
-import com.beust.klaxon.JsonObject;
+import org.slf4j.*;
 
 /**
  * Olm SDK helper class.
  */
 public class OlmUtility
 {
-	private static final Logger LOGGER = Logger.getLogger(OlmUtility.class.getName());
-	
 	public static final int RANDOM_KEY_SIZE = 32;
-	
+	private static final Logger LOGGER = LoggerFactory.getLogger(OlmUtility.class);
 	/**
 	 * Instance Id returned by JNI.
 	 * This value uniquely identifies this utility instance.
@@ -41,6 +37,26 @@ public class OlmUtility
 			throws OlmException
 	{
 		initUtility();
+	}
+	
+	/**
+	 * Helper method to compute a string based on random integers.
+	 *
+	 * @return bytes buffer containing randoms integer values
+	 */
+	public static byte[] getRandomKey()
+	{
+		SecureRandom secureRandom = new SecureRandom();
+		byte[] buffer = new byte[RANDOM_KEY_SIZE];
+		secureRandom.nextBytes(buffer);
+		
+		// the key is saved as string
+		// so avoid the UTF8 marker bytes
+		for (int i = 0; i < RANDOM_KEY_SIZE; i++)
+		{
+			buffer[i] = (byte) (buffer[i] & 0x7F);
+		}
+		return buffer;
 	}
 	
 	/**
@@ -97,7 +113,7 @@ public class OlmUtility
 		{
 			if (aSignature.isEmpty() || aFingerprintKey.isEmpty() || aMessage.isEmpty())
 			{
-				LOGGER.severe("## verifyEd25519Signature(): invalid input parameters");
+				LOGGER.error("## verifyEd25519Signature(): invalid input parameters");
 				errorMessage = "JAVA sanity check failure - invalid input parameters";
 			}
 			else
@@ -108,7 +124,7 @@ public class OlmUtility
 		catch (Exception e)
 		{
 			errorMessage = e.getMessage();
-			LOGGER.severe("## verifyEd25519Signature(): failed " + errorMessage);
+			LOGGER.error("## verifyEd25519Signature(): failed " + errorMessage);
 		}
 		
 		if (errorMessage != null)
@@ -147,7 +163,7 @@ public class OlmUtility
 			}
 			catch (Exception e)
 			{
-				LOGGER.severe("## sha256(): failed " + e.getMessage());
+				LOGGER.error("## sha256(): failed " + e.getMessage());
 			}
 		}
 		
@@ -163,26 +179,6 @@ public class OlmUtility
 	 * @return digest of the message.
 	 **/
 	private native byte[] sha256Jni(byte[] aMessage);
-	
-	/**
-	 * Helper method to compute a string based on random integers.
-	 *
-	 * @return bytes buffer containing randoms integer values
-	 */
-	public static byte[] getRandomKey()
-	{
-		SecureRandom secureRandom = new SecureRandom();
-		byte[] buffer = new byte[RANDOM_KEY_SIZE];
-		secureRandom.nextBytes(buffer);
-		
-		// the key is saved as string
-		// so avoid the UTF8 marker bytes
-		for (int i = 0; i < RANDOM_KEY_SIZE; i++)
-		{
-			buffer[i] = (byte) (buffer[i] & 0x7F);
-		}
-		return buffer;
-	}
 	
 	/**
 	 * Return true the object resources have been released.<br>

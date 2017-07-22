@@ -17,10 +17,9 @@
 package org.matrix.olm;
 
 import java.io.*;
-import java.util.*;
-import java.util.logging.Logger;
 
 import com.beust.klaxon.*;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -30,17 +29,12 @@ import com.beust.klaxon.*;
  */
 public class OlmAccount extends CommonSerializeUtils implements Serializable
 {
-	private static final long serialVersionUID = 3497486121598434824L;
-	private static final Logger LOGGER = Logger.getLogger(OlmAccount.class.getName());
-	
-	// JSON keys used in the JSON objects returned by JNI
 	/**
 	 * As well as the identity key, each device creates a number of Curve25519 key pairs which are
 	 * also used to establish Olm sessions, but can only be used once. Once again, the private part
 	 * remains on the device. but the public part is published to the Matrix network
 	 **/
 	public static final String JSON_KEY_ONE_TIME_KEY = "curve25519";
-	
 	/**
 	 * Curve25519 identity key is a public-key cryptographic system which can be used to establish a shared
 	 * secret.<br>In Matrix, each device has a long-lived Curve25519 identity key which is used to establish
@@ -49,13 +43,15 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 **/
 	public static final String JSON_KEY_IDENTITY_KEY = "curve25519";
 	
+	// JSON keys used in the JSON objects returned by JNI
 	/**
 	 * Ed25519 finger print is a public-key cryptographic system for signing messages.<br>In Matrix, each device has
 	 * an Ed25519 key pair which serves to identify that device. The private the key should
 	 * never leave the device, but the public part is published to the Matrix network.
 	 **/
 	public static final String JSON_KEY_FINGER_PRINT_KEY = "ed25519";
-	
+	private static final long serialVersionUID = 3497486121598434824L;
+	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(OlmAccount.class);
 	/**
 	 * Account Id returned by JNI.
 	 * This value identifies uniquely the native account instance.
@@ -150,7 +146,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 		}
 		catch (Exception e)
 		{
-			LOGGER.severe("## identityKeys(): Failure - " + e.getMessage());
+			LOGGER.error("## identityKeys(): Failure - " + e.getMessage());
 			throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_IDENTITY_KEYS, e.getMessage());
 		}
 		
@@ -162,12 +158,12 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 			}
 			catch (Exception e)
 			{
-				LOGGER.severe("## identityKeys(): Exception - Msg=" + e.getMessage());
+				LOGGER.error("## identityKeys(): Exception - Msg=" + e.getMessage());
 			}
 		}
 		else
 		{
-			LOGGER.severe("## identityKeys(): Failure - identityKeysJni()=null");
+			LOGGER.error("## identityKeys(): Failure - identityKeysJni()=null");
 		}
 		
 		return identityKeysJsonObj;
@@ -269,12 +265,12 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 			}
 			catch (Exception e)
 			{
-				LOGGER.severe("## oneTimeKeys(): Exception - Msg=" + e.getMessage());
+				LOGGER.error("## oneTimeKeys(): Exception - Msg=" + e.getMessage());
 			}
 		}
 		else
 		{
-			LOGGER.severe("## oneTimeKeys(): Failure - identityKeysJni()=null");
+			LOGGER.error("## oneTimeKeys(): Failure - identityKeysJni()=null");
 		}
 		
 		return oneTimeKeysJsonObj;
@@ -437,7 +433,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 		// sanity check
 		if (null == aErrorMsg)
 		{
-			LOGGER.severe("## serialize(): invalid parameter - aErrorMsg=null");
+			LOGGER.error("## serialize(): invalid parameter - aErrorMsg=null");
 		}
 		else if (null == aKey)
 		{
@@ -452,7 +448,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 			}
 			catch (Exception e)
 			{
-				LOGGER.severe("## serialize() failed " + e.getMessage());
+				LOGGER.error("## serialize() failed " + e.getMessage());
 				aErrorMsg.append(e.getMessage());
 			}
 		}
@@ -486,7 +482,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 		{
 			if ((null == aSerializedData) || (null == aKey))
 			{
-				LOGGER.severe("## deserialize(): invalid input parameters");
+				LOGGER.error("## deserialize(): invalid input parameters");
 				errorMsg = "invalid input parameters";
 			}
 			else
@@ -496,7 +492,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 		}
 		catch (Exception e)
 		{
-			LOGGER.severe("## deserialize() failed " + e.getMessage());
+			LOGGER.error("## deserialize() failed " + e.getMessage());
 			errorMsg = e.getMessage();
 		}
 		

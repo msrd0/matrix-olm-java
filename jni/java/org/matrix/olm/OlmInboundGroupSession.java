@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 public class OlmInboundGroupSession extends CommonSerializeUtils implements Serializable
 {
 	private static final long serialVersionUID = -772028491251653253L;
-	private static final Logger LOGGER = Logger.getLogger(OlmInboundGroupSession.class.getName());
+	private static final Logger LOGGER = LoggerFactory.getLogger(OlmInboundGroupSession.class.getName());
 	
 	/**
 	 * Session Id returned by JNI.<br>
@@ -76,7 +76,7 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 	{
 		if (aSessionKey.isEmpty())
 		{
-			LOGGER.severe("## initInboundGroupSession(): invalid session key");
+			LOGGER.error("## initInboundGroupSession(): invalid session key");
 			throw new OlmException(OlmException.EXCEPTION_CODE_INIT_INBOUND_GROUP_SESSION, "invalid session key");
 		}
 		else
@@ -162,7 +162,7 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 		}
 		catch (Exception e)
 		{
-			LOGGER.severe("## sessionIdentifier() failed " + e.getMessage());
+			LOGGER.error("## sessionIdentifier() failed " + e.getMessage());
 			throw new OlmException(OlmException.EXCEPTION_CODE_INBOUND_GROUP_SESSION_IDENTIFIER, e.getMessage());
 		}
 	}
@@ -192,7 +192,7 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 		}
 		catch (Exception e)
 		{
-			LOGGER.severe("## getFirstKnownIndex() failed " + e.getMessage());
+			LOGGER.error("## getFirstKnownIndex() failed " + e.getMessage());
 			throw new OlmException(OlmException.EXCEPTION_CODE_INBOUND_GROUP_SESSION_FIRST_KNOWN_INDEX, e.getMessage());
 		}
 		
@@ -224,7 +224,7 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 		}
 		catch (Exception e)
 		{
-			LOGGER.severe("## isVerified() failed " + e.getMessage());
+			LOGGER.error("## isVerified() failed " + e.getMessage());
 			throw new OlmException(OlmException.EXCEPTION_CODE_INBOUND_GROUP_SESSION_IS_VERIFIED, e.getMessage());
 		}
 		
@@ -261,7 +261,7 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 		}
 		catch (Exception e)
 		{
-			LOGGER.severe("## export() failed " + e.getMessage());
+			LOGGER.error("## export() failed " + e.getMessage());
 			throw new OlmException(OlmException.EXCEPTION_CODE_INBOUND_GROUP_SESSION_EXPORT, e.getMessage());
 		}
 		
@@ -301,7 +301,7 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 		}
 		catch (Exception e)
 		{
-			LOGGER.severe("## decryptMessage() failed " + e.getMessage());
+			LOGGER.error("## decryptMessage() failed " + e.getMessage());
 			throw new OlmException(OlmException.EXCEPTION_CODE_INBOUND_GROUP_SESSION_DECRYPT_SESSION, e.getMessage());
 		}
 		
@@ -364,7 +364,7 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 		// sanity check
 		if (null == aErrorMsg)
 		{
-			LOGGER.severe("## serialize(): invalid parameter - aErrorMsg=null");
+			LOGGER.error("## serialize(): invalid parameter - aErrorMsg=null");
 			aErrorMsg.append("aErrorMsg=null");
 		}
 		else if (null == aKey)
@@ -380,7 +380,7 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 			}
 			catch (Exception e)
 			{
-				LOGGER.severe("## serialize() failed " + e.getMessage());
+				LOGGER.error("## serialize() failed " + e.getMessage());
 				aErrorMsg.append(e.getMessage());
 			}
 		}
@@ -413,7 +413,7 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 		{
 			if ((null == aSerializedData) || (null == aKey))
 			{
-				LOGGER.severe("## deserialize(): invalid input parameters");
+				LOGGER.error("## deserialize(): invalid input parameters");
 				errorMsg = "invalid input parameters";
 			}
 			else
@@ -423,7 +423,7 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 		}
 		catch (Exception e)
 		{
-			LOGGER.severe("## deserialize() failed " + e.getMessage());
+			LOGGER.error("## deserialize() failed " + e.getMessage());
 			errorMsg = e.getMessage();
 		}
 		
