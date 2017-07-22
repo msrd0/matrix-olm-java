@@ -2,8 +2,9 @@ image: msrd0/gradle
 
 build:
   stage: build
+  image: msrd0/gradle-cross
   before_script:
-    - sudo apk add --no-cache ca-certificates cmake g++ gcc git make
+    - sudo apt-get add --no-install-recommends cmake git make
     - git submodule update --init
     - mkdir -p .gradle
   script:
