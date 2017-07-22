@@ -4,8 +4,6 @@ build:
   stage: build
   image: msrd0/gradle-cross
   before_script:
-    - sudo apt-get -y update
-    - sudo apt-get -y install --no-install-recommends cmake git make
     - git submodule update --init
     - mkdir -p .gradle
   script:
@@ -18,7 +16,7 @@ build:
 deploy:
   stage: deploy
   before_script:
-    - sudo apk add --no-cache ca-certificates cmake g++ gcc git make
+    - sudo apk add --no-cache ca-certificates git
     - git submodule update --init
   script:
     - GRADLE_USER_HOME=.gradle gradle artifactoryPublish
