@@ -4,7 +4,8 @@ build:
   stage: build
   image: msrd0/gradle-cross
   before_script:
-    - sudo apt-get install --no-install-recommends cmake git make
+    - sudo apt-get -y update
+    - sudo apt-get -y install --no-install-recommends cmake git make
     - git submodule update --init
     - mkdir -p .gradle
   script:
