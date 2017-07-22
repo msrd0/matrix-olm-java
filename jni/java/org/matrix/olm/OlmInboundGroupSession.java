@@ -17,7 +17,9 @@
 package org.matrix.olm;
 
 import java.io.*;
-import java.util.logging.Logger;
+
+
+import org.slf4j.*;
 
 /**
  * Class used to create an inbound <a href="http://matrix.org/docs/guides/e2e_implementation.html#handling-an-m-room-key-event">Megolm session</a>.<br>

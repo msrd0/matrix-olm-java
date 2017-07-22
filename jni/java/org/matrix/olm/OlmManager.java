@@ -20,7 +20,7 @@ import java.io.*;
 
 import msrd0.jni.jni_multilib.JniLoader;
 
-import org.slf4j.LoggerFactory;
+import org.slf4j.*;
 
 /**
  * Olm SDK entry point class.<br> An OlmManager instance must be created at first to enable native library load.
@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 public class OlmManager
 {
-	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(OlmManager.class.getName());
+	private static final Logger LOGGER = LoggerFactory.getLogger(OlmManager.class.getName());
 	
 	/**
 	 * Constructor.

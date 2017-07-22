@@ -19,7 +19,7 @@ package org.matrix.olm;
 import java.io.*;
 
 import com.beust.klaxon.*;
-import org.slf4j.LoggerFactory;
+import org.slf4j.*;
 
 
 /**
@@ -51,7 +51,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 **/
 	public static final String JSON_KEY_FINGER_PRINT_KEY = "ed25519";
 	private static final long serialVersionUID = 3497486121598434824L;
-	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(OlmAccount.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(OlmAccount.class);
 	/**
 	 * Account Id returned by JNI.
 	 * This value identifies uniquely the native account instance.
