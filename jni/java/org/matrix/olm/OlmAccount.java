@@ -137,7 +137,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * @return identity keys dictionary if operation succeeds, null otherwise
 	 * @throws OlmException the failure reason
 	 */
-	public Map<String, String> identityKeys()
+	public JsonObject identityKeys()
 			throws OlmException
 	{
 		JsonObject identityKeysJsonObj = null;
@@ -158,8 +158,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 		{
 			try
 			{
-				
-				identityKeysJsonObj = (JsonObject) new Parser().parse(String.valueOf(identityKeysBuffer));
+				identityKeysJsonObj = (JsonObject) new Parser().parse(new StringBuilder(String.valueOf(identityKeysBuffer)));
 			}
 			catch (Exception e)
 			{
@@ -171,7 +170,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 			LOGGER.severe("## identityKeys(): Failure - identityKeysJni()=null");
 		}
 		
-		return OlmUtility.toStringMap(identityKeysJsonObj);
+		return identityKeysJsonObj;
 	}
 	
 	/**
@@ -247,7 +246,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * @return one time keys in string dictionary.
 	 * @throws OlmException the failure reason
 	 */
-	public Map<String, Map<String, String>> oneTimeKeys()
+	public JsonObject oneTimeKeys()
 			throws OlmException
 	{
 		JsonObject oneTimeKeysJsonObj = null;
@@ -278,7 +277,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 			LOGGER.severe("## oneTimeKeys(): Failure - identityKeysJni()=null");
 		}
 		
-		return OlmUtility.toStringMapMap(oneTimeKeysJsonObj);
+		return oneTimeKeysJsonObj;
 	}
 	
 	/**

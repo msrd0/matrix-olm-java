@@ -32,7 +32,7 @@ dependencies {
 	compile "msrd0.jni:jni-multilib:0.1-SNAPSHOT"
 	
 	// json lib
-	compile "com.beust:klaxon:0.31-SNAPSHOT"
+	compile "com.beust:klaxon:0.31"
 	
 	// logging lib
 	compile "org.slf4j:slf4j-api:1.7.+"
