@@ -4,14 +4,11 @@ buildscript {
 	repositories {
 		mavenLocal()
 		jcenter()
-		maven { url "https://msrd0.duckdns.org/artifactory/gradle" }
+		maven { url "https://maven.devpi.de/repository/default/" }
 	}
 	dependencies {
 		// jni plugin
 		classpath "msrd0.jni:jni-multilib-gradle:0.1-SNAPSHOT"
-		
-		// jfrog artifactory
-		classpath "org.jfrog.buildinfo:build-info-extractor-gradle:+"
 	}
 }
 
@@ -24,7 +21,7 @@ version "$matrix_olm_major.$matrix_olm_minor.$matrix_olm_patch-$matrix_olm_java_
 repositories {
 	mavenLocal()
 	jcenter()
-	maven { url "https://msrd0.duckdns.org/artifactory/gradle" }
+	maven { url "https://maven.devpi.de/repository/default/" }
 }
 
 dependencies {
@@ -67,14 +64,22 @@ jni {
 	]
 }
 
+task sourcesJar(type : Jar) {
+	from sourceSets.main.allSource
+}
 
-apply plugin: 'com.jfrog.artifactory'
+
 apply plugin: 'maven-publish'
 
 publishing {
 	publications {
 		mavenJava(MavenPublication) {
 			from components.java
+			
+			artifact sourcesJar {
+				classifier "sources"
+			}
+			
 			pom.withXml {
 				asNode()
 					.appendNode('licenses')
@@ -89,28 +94,14 @@ publishing {
 			}
 		}
 	}
-}
-
-artifactory {
-	contextUrl = 'https://msrd0.duckdns.org/artifactory'
-	resolve {
-		repository {
-			repoKey = 'gradle'
+	
+	repositories {
+		maven {
+			url "https://maven.devpi.de/repository/default/"
+			credentials(PasswordCredentials) {
+				username "gitlab-ci"
+				password System.getenv("ARTIFACTORY_PASSWORD")
+			}
 		}
 	}
-	publish {
-		repository {
-			repoKey = 'local'
-			username = 'gitlab-ci'
-			password = System.getenv("ARTIFACTORY_PASSWORD")
-			maven = true
-		}
-		defaults {
-			publications('mavenJava')
-		}
-	}
-}
-
-artifactoryPublish {
-	dependsOn jar
 }

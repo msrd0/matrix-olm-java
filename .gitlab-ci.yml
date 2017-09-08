@@ -19,6 +19,6 @@ deploy:
     - sudo apk add --no-cache ca-certificates git
     - git submodule update --init
   script:
-    - GRADLE_USER_HOME=.gradle gradle artifactoryPublish
+    - GRADLE_USER_HOME=.gradle gradle publish
   only:
     - master
