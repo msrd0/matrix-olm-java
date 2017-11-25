@@ -49,7 +49,7 @@ abstract class CommonSerializeUtils
 		
 		if (null == pickledData)
 		{
-			throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_SERIALIZATION, String.valueOf(errorMsg));
+			throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_SERIALIZATION, errorMsg.toString());
 		}
 		else
 		{

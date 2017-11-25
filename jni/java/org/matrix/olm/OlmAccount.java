@@ -16,6 +16,8 @@
  */
 package org.matrix.olm;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.*;
 
 import javax.annotation.*;
@@ -162,7 +164,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 		{
 			try
 			{
-				identityKeysJsonObj = (JsonObject) new Parser().parse(new StringBuilder(String.valueOf(identityKeysBuffer)));
+				identityKeysJsonObj = (JsonObject) new Parser().parse(new ByteArrayInputStream(identityKeysBuffer), UTF_8);
 			}
 			catch (Exception e)
 			{
@@ -270,7 +272,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 		{
 			try
 			{
-				oneTimeKeysJsonObj = (JsonObject) new Parser().parse(String.valueOf(oneTimeKeysBuffer));
+				oneTimeKeysJsonObj = (JsonObject) new Parser().parse(new ByteArrayInputStream(oneTimeKeysBuffer), UTF_8);
 			}
 			catch (Exception e)
 			{
