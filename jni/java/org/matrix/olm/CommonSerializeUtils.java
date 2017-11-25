@@ -18,6 +18,8 @@ package org.matrix.olm;
 
 import java.io.*;
 
+import javax.annotation.Nonnull;
+
 import org.slf4j.*;
 
 /**
@@ -33,7 +35,7 @@ abstract class CommonSerializeUtils
 	 * @param aOutStream output stream for serializing
 	 * @throws IOException exception
 	 */
-	protected void serialize(ObjectOutputStream aOutStream)
+	protected void serialize(@Nonnull ObjectOutputStream aOutStream)
 			throws IOException
 	{
 		aOutStream.defaultWriteObject();
@@ -62,7 +64,7 @@ abstract class CommonSerializeUtils
 	 * @param aInStream input stream
 	 * @throws Exception the exception
 	 */
-	protected void deserialize(ObjectInputStream aInStream)
+	protected void deserialize(@Nonnull ObjectInputStream aInStream)
 			throws Exception
 	{
 		aInStream.defaultReadObject();

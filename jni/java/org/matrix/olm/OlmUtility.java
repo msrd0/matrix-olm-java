@@ -18,6 +18,8 @@ package org.matrix.olm;
 
 import java.security.SecureRandom;
 
+import javax.annotation.*;
+
 import org.slf4j.*;
 
 /**
@@ -44,6 +46,7 @@ public class OlmUtility
 	 *
 	 * @return bytes buffer containing randoms integer values
 	 */
+	@Nonnull
 	public static byte[] getRandomKey()
 	{
 		SecureRandom secureRandom = new SecureRandom();
@@ -104,7 +107,7 @@ public class OlmUtility
 	 * @param aMessage        the signed message
 	 * @throws OlmException the failure reason
 	 */
-	public void verifyEd25519Signature(String aSignature, String aFingerprintKey, String aMessage)
+	public void verifyEd25519Signature(@Nonnull String aSignature, @Nonnull String aFingerprintKey, @Nonnull String aMessage)
 			throws OlmException
 	{
 		String errorMessage;
@@ -118,7 +121,8 @@ public class OlmUtility
 			}
 			else
 			{
-				errorMessage = verifyEd25519SignatureJni(aSignature.getBytes("UTF-8"), aFingerprintKey.getBytes("UTF-8"), aMessage.getBytes("UTF-8"));
+				errorMessage = verifyEd25519SignatureJni(aSignature.getBytes("UTF-8"),
+						aFingerprintKey.getBytes("UTF-8"), aMessage.getBytes("UTF-8"));
 			}
 		}
 		catch (Exception e)
@@ -151,23 +155,18 @@ public class OlmUtility
 	 * @param aMessageToHash message to be hashed
 	 * @return hash value if operation succeed, null otherwise
 	 */
-	public String sha256(String aMessageToHash)
+	@Nullable
+	public String sha256(@Nonnull String aMessageToHash)
 	{
-		String hashRetValue = null;
-		
-		if (null != aMessageToHash)
+		try
 		{
-			try
-			{
-				hashRetValue = new String(sha256Jni(aMessageToHash.getBytes("UTF-8")), "UTF-8");
-			}
-			catch (Exception e)
-			{
-				LOGGER.error("## sha256(): failed " + e.getMessage());
-			}
+			return new String(sha256Jni(aMessageToHash.getBytes("UTF-8")), "UTF-8");
 		}
-		
-		return hashRetValue;
+		catch (Exception e)
+		{
+			LOGGER.error("## sha256(): failed " + e.getMessage());
+			return null;
+		}
 	}
 	
 	/**

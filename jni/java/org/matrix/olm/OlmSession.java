@@ -18,6 +18,8 @@ package org.matrix.olm;
 
 import java.io.*;
 
+import javax.annotation.*;
+
 import org.slf4j.*;
 
 /**
@@ -110,10 +112,11 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * @param aTheirOneTimeKey  the one time key of the recipient
 	 * @throws OlmException the failure reason
 	 */
-	public void initOutboundSession(OlmAccount aAccount, String aTheirIdentityKey, String aTheirOneTimeKey)
+	public void initOutboundSession(@Nonnull OlmAccount aAccount,
+									@Nonnull String aTheirIdentityKey, @Nonnull String aTheirOneTimeKey)
 			throws OlmException
 	{
-		if ((null == aAccount) || aTheirIdentityKey.isEmpty() || aTheirOneTimeKey.isEmpty())
+		if (aTheirIdentityKey.isEmpty() || aTheirOneTimeKey.isEmpty())
 		{
 			LOGGER.error("## initOutboundSession(): invalid input parameters");
 			throw new OlmException(OlmException.EXCEPTION_CODE_SESSION_INIT_OUTBOUND_SESSION, "invalid input parameters");
@@ -122,7 +125,8 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 		{
 			try
 			{
-				initOutboundSessionJni(aAccount.getOlmAccountId(), aTheirIdentityKey.getBytes("UTF-8"), aTheirOneTimeKey.getBytes("UTF-8"));
+				initOutboundSessionJni(aAccount.getOlmAccountId(),
+						aTheirIdentityKey.getBytes("UTF-8"), aTheirOneTimeKey.getBytes("UTF-8"));
 			}
 			catch (Exception e)
 			{
@@ -153,10 +157,10 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * @param aPreKeyMsg PRE KEY message
 	 * @throws OlmException the failure reason
 	 */
-	public void initInboundSession(OlmAccount aAccount, String aPreKeyMsg)
+	public void initInboundSession(@Nonnull OlmAccount aAccount, @Nonnull String aPreKeyMsg)
 			throws OlmException
 	{
-		if ((null == aAccount) || aPreKeyMsg.isEmpty())
+		if (aPreKeyMsg.isEmpty())
 		{
 			LOGGER.error("## initInboundSession(): invalid input parameters");
 			throw new OlmException(OlmException.EXCEPTION_CODE_SESSION_INIT_INBOUND_SESSION, "invalid input parameters");
@@ -197,10 +201,11 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * @param aPreKeyMsg        PRE KEY message
 	 * @throws OlmException the failure reason
 	 */
-	public void initInboundSessionFrom(OlmAccount aAccount, String aTheirIdentityKey, String aPreKeyMsg)
+	public void initInboundSessionFrom(@Nonnull OlmAccount aAccount,
+									   @Nonnull String aTheirIdentityKey, @Nonnull String aPreKeyMsg)
 			throws OlmException
 	{
-		if ((null == aAccount) || aPreKeyMsg.isEmpty())
+		if (aPreKeyMsg.isEmpty())
 		{
 			LOGGER.error("## initInboundSessionFrom(): invalid input parameters");
 			throw new OlmException(OlmException.EXCEPTION_CODE_SESSION_INIT_INBOUND_SESSION_FROM, "invalid input parameters");
@@ -209,7 +214,8 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 		{
 			try
 			{
-				initInboundSessionFromIdKeyJni(aAccount.getOlmAccountId(), aTheirIdentityKey.getBytes("UTF-8"), aPreKeyMsg.getBytes("UTF-8"));
+				initInboundSessionFromIdKeyJni(aAccount.getOlmAccountId(),
+						aTheirIdentityKey.getBytes("UTF-8"), aPreKeyMsg.getBytes("UTF-8"));
 			}
 			catch (Exception e)
 			{
@@ -239,6 +245,7 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * @return the session ID
 	 * @throws OlmException the failure reason
 	 */
+	@Nullable
 	public String sessionIdentifier()
 			throws OlmException
 	{
@@ -276,7 +283,7 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * @param aOneTimeKeyMsg PRE KEY message
 	 * @return true if the one time key matches.
 	 */
-	public boolean matchesInboundSession(String aOneTimeKeyMsg)
+	public boolean matchesInboundSession(@Nonnull String aOneTimeKeyMsg)
 	{
 		boolean retCode = false;
 		
@@ -311,7 +318,7 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * @param aOneTimeKeyMsg    PRE KEY message
 	 * @return this if operation succeed, null otherwise
 	 */
-	public boolean matchesInboundSessionFrom(String aTheirIdentityKey, String aOneTimeKeyMsg)
+	public boolean matchesInboundSessionFrom(@Nonnull String aTheirIdentityKey, @Nonnull String aOneTimeKeyMsg)
 	{
 		boolean retCode = false;
 		
@@ -347,14 +354,10 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * @return the encrypted message
 	 * @throws OlmException the failure reason
 	 */
-	public OlmMessage encryptMessage(String aClearMsg)
+	@Nonnull
+	public OlmMessage encryptMessage(@Nonnull String aClearMsg)
 			throws OlmException
 	{
-		if (null == aClearMsg)
-		{
-			return null;
-		}
-		
 		OlmMessage encryptedMsgRetValue = new OlmMessage();
 		
 		try
@@ -393,14 +396,10 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * @return the decrypted message
 	 * @throws OlmException the failure reason
 	 */
-	public String decryptMessage(OlmMessage aEncryptedMsg)
+	@Nonnull
+	public String decryptMessage(@Nonnull OlmMessage aEncryptedMsg)
 			throws OlmException
 	{
-		if (null == aEncryptedMsg)
-		{
-			return null;
-		}
-		
 		try
 		{
 			return new String(decryptMessageJni(aEncryptedMsg), "UTF-8");
@@ -431,7 +430,7 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * @param aOutStream output stream for serializing
 	 * @throws IOException exception
 	 */
-	private void writeObject(ObjectOutputStream aOutStream)
+	private void writeObject(@Nonnull ObjectOutputStream aOutStream)
 			throws IOException
 	{
 		serialize(aOutStream);
@@ -444,7 +443,7 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * @throws IOException            exception
 	 * @throws ClassNotFoundException exception
 	 */
-	private void readObject(ObjectInputStream aInStream)
+	private void readObject(@Nonnull ObjectInputStream aInStream)
 			throws Exception
 	{
 		deserialize(aInStream);
@@ -461,31 +460,21 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * @return session as a bytes buffer
 	 */
 	@Override
-	protected byte[] serialize(byte[] aKey, StringBuffer aErrorMsg)
+	@Nullable
+	protected byte[] serialize(@Nonnull byte[] aKey, @Nonnull StringBuffer aErrorMsg)
 	{
 		byte[] pickleRetValue = null;
 		
 		// sanity check
-		if (null == aErrorMsg)
+		aErrorMsg.setLength(0);
+		try
 		{
-			LOGGER.error("## serializeDataWithKey(): invalid parameter - aErrorMsg=null");
+			pickleRetValue = serializeJni(aKey);
 		}
-		else if (null == aKey)
+		catch (Exception e)
 		{
-			aErrorMsg.append("Invalid input parameters in serializeDataWithKey()");
-		}
-		else
-		{
-			aErrorMsg.setLength(0);
-			try
-			{
-				pickleRetValue = serializeJni(aKey);
-			}
-			catch (Exception e)
-			{
-				LOGGER.error("## serializeDataWithKey(): failed " + e.getMessage());
-				aErrorMsg.append(e.getMessage());
-			}
+			LOGGER.error("## serializeDataWithKey(): failed " + e.getMessage());
+			aErrorMsg.append(e.getMessage());
 		}
 		
 		return pickleRetValue;
@@ -508,22 +497,14 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * @param aKey            key used to encrypted
 	 */
 	@Override
-	protected void deserialize(byte[] aSerializedData, byte[] aKey)
+	protected void deserialize(@Nonnull byte[] aSerializedData, @Nonnull byte[] aKey)
 			throws Exception
 	{
 		String errorMsg = null;
 		
 		try
 		{
-			if ((null == aSerializedData) || (null == aKey))
-			{
-				LOGGER.error("## deserialize(): invalid input parameters");
-				errorMsg = "invalid input parameters";
-			}
-			else
-			{
-				mNativeId = deserializeJni(aSerializedData, aKey);
-			}
+			mNativeId = deserializeJni(aSerializedData, aKey);
 		}
 		catch (Exception e)
 		{
@@ -531,7 +512,7 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 			errorMsg = e.getMessage();
 		}
 		
-		if (!errorMsg.isEmpty())
+		if (errorMsg != null)
 		{
 			releaseSession();
 			throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_DESERIALIZATION, errorMsg);

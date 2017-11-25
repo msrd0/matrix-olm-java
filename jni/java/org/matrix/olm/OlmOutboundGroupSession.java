@@ -18,6 +18,8 @@ package org.matrix.olm;
 
 import java.io.*;
 
+import javax.annotation.*;
+
 import org.slf4j.LoggerFactory;
 
 /**
@@ -104,6 +106,7 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 	 * @return session identifier
 	 * @throws OlmException the failure reason
 	 */
+	@Nonnull
 	public String sessionIdentifier()
 			throws OlmException
 	{
@@ -156,6 +159,7 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 	 * @return outbound session key
 	 * @throws OlmException the failure reason
 	 */
+	@Nonnull
 	public String sessionKey()
 			throws OlmException
 	{
@@ -186,6 +190,7 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 	 * @return the encrypted message
 	 * @throws OlmException the encryption failure reason
 	 */
+	@Nullable
 	public String encryptMessage(String aClearMsg)
 			throws OlmException
 	{
@@ -231,7 +236,7 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 	 * @param aOutStream output stream for serializing
 	 * @throws IOException exception
 	 */
-	private void writeObject(ObjectOutputStream aOutStream)
+	private void writeObject(@Nonnull ObjectOutputStream aOutStream)
 			throws IOException
 	{
 		serialize(aOutStream);
@@ -243,7 +248,7 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 	 * @param aInStream input stream
 	 * @throws Exception exception
 	 */
-	private void readObject(ObjectInputStream aInStream)
+	private void readObject(@Nonnull ObjectInputStream aInStream)
 			throws Exception
 	{
 		deserialize(aInStream);
@@ -260,30 +265,19 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 	 * @return pickled base64 bytes buffer if operation succeed, null otherwise
 	 */
 	@Override
-	protected byte[] serialize(byte[] aKey, StringBuffer aErrorMsg)
+	@Nullable
+	protected byte[] serialize(@Nonnull byte[] aKey, @Nonnull StringBuffer aErrorMsg)
 	{
 		byte[] pickleRetValue = null;
 		
-		// sanity check
-		if (null == aErrorMsg)
+		try
 		{
-			LOGGER.error("## serialize(): invalid parameter - aErrorMsg=null");
+			pickleRetValue = serializeJni(aKey);
 		}
-		else if (null == aKey)
+		catch (Exception e)
 		{
-			aErrorMsg.append("Invalid input parameters in serialize()");
-		}
-		else
-		{
-			try
-			{
-				pickleRetValue = serializeJni(aKey);
-			}
-			catch (Exception e)
-			{
-				LOGGER.error("## serialize(): failed " + e.getMessage());
-				aErrorMsg.append(e.getMessage());
-			}
+			LOGGER.error("## serialize(): failed " + e.getMessage());
+			aErrorMsg.append(e.getMessage());
 		}
 		
 		return pickleRetValue;
@@ -307,22 +301,14 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 	 * @throws Exception the exception
 	 */
 	@Override
-	protected void deserialize(byte[] aSerializedData, byte[] aKey)
+	protected void deserialize(@Nonnull byte[] aSerializedData, @Nonnull byte[] aKey)
 			throws Exception
 	{
 		String errorMsg = null;
 		
 		try
 		{
-			if ((null == aSerializedData) || (null == aKey))
-			{
-				LOGGER.error("## deserialize(): invalid input parameters");
-				errorMsg = "invalid input parameters";
-			}
-			else
-			{
-				mNativeId = deserializeJni(aSerializedData, aKey);
-			}
+			mNativeId = deserializeJni(aSerializedData, aKey);
 		}
 		catch (Exception e)
 		{
@@ -330,7 +316,7 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 			errorMsg = e.getMessage();
 		}
 		
-		if (!errorMsg.isEmpty())
+		if (errorMsg != null)
 		{
 			releaseSession();
 			throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_DESERIALIZATION, errorMsg);

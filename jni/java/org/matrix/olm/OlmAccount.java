@@ -18,6 +18,8 @@ package org.matrix.olm;
 
 import java.io.*;
 
+import javax.annotation.*;
+
 import com.beust.klaxon.*;
 import org.slf4j.*;
 
@@ -34,6 +36,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * also used to establish Olm sessions, but can only be used once. Once again, the private part
 	 * remains on the device. but the public part is published to the Matrix network
 	 **/
+	@Nonnull
 	public static final String JSON_KEY_ONE_TIME_KEY = "curve25519";
 	/**
 	 * Curve25519 identity key is a public-key cryptographic system which can be used to establish a shared
@@ -41,6 +44,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * Olm sessions with that device. The private key should never leave the device, but the
 	 * public part is signed with the Ed25519 fingerprint key ({@link #JSON_KEY_FINGER_PRINT_KEY}) and published to the network.
 	 **/
+	@Nonnull
 	public static final String JSON_KEY_IDENTITY_KEY = "curve25519";
 	
 	// JSON keys used in the JSON objects returned by JNI
@@ -49,9 +53,12 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * an Ed25519 key pair which serves to identify that device. The private the key should
 	 * never leave the device, but the public part is published to the Matrix network.
 	 **/
+	@Nonnull
 	public static final String JSON_KEY_FINGER_PRINT_KEY = "ed25519";
+	
 	private static final long serialVersionUID = 3497486121598434824L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(OlmAccount.class);
+	
 	/**
 	 * Account Id returned by JNI.
 	 * This value identifies uniquely the native account instance.
@@ -133,6 +140,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * @return identity keys dictionary if operation succeeds, null otherwise
 	 * @throws OlmException the failure reason
 	 */
+	@Nullable
 	public JsonObject identityKeys()
 			throws OlmException
 	{
@@ -242,6 +250,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * @return one time keys in string dictionary.
 	 * @throws OlmException the failure reason
 	 */
+	@Nullable
 	public JsonObject oneTimeKeys()
 			throws OlmException
 	{
@@ -292,7 +301,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * @param aSession session instance
 	 * @throws OlmException the failure reason
 	 */
-	public void removeOneTimeKeys(OlmSession aSession)
+	public void removeOneTimeKeys(@Nullable OlmSession aSession)
 			throws OlmException
 	{
 		if (null != aSession)
@@ -348,31 +357,29 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * @return the signed message
 	 * @throws OlmException the failure reason
 	 */
-	public String signMessage(String aMessage)
+	@Nullable
+	public String signMessage(@Nonnull String aMessage)
 			throws OlmException
 	{
 		String result = null;
 		
-		if (null != aMessage)
+		try
 		{
-			try
+			byte[] utf8String = aMessage.getBytes("UTF-8");
+			
+			if (null != utf8String)
 			{
-				byte[] utf8String = aMessage.getBytes("UTF-8");
+				byte[] signedMessage = signMessageJni(utf8String);
 				
-				if (null != utf8String)
+				if (null != signedMessage)
 				{
-					byte[] signedMessage = signMessageJni(utf8String);
-					
-					if (null != signedMessage)
-					{
-						result = new String(signedMessage, "UTF-8");
-					}
+					result = new String(signedMessage, "UTF-8");
 				}
 			}
-			catch (Exception e)
-			{
-				throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_SIGN_MESSAGE, e.getMessage());
-			}
+		}
+		catch (Exception e)
+		{
+			throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_SIGN_MESSAGE, e.getMessage());
 		}
 		
 		return result;
@@ -426,31 +433,20 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * @return the account as bytes buffer
 	 */
 	@Override
-	protected byte[] serialize(byte[] aKey, StringBuffer aErrorMsg)
+	@Nullable
+	protected byte[] serialize(@Nonnull byte[] aKey, @Nonnull StringBuffer aErrorMsg)
 	{
 		byte[] pickleRetValue = null;
 		
-		// sanity check
-		if (null == aErrorMsg)
+		aErrorMsg.setLength(0);
+		try
 		{
-			LOGGER.error("## serialize(): invalid parameter - aErrorMsg=null");
+			pickleRetValue = serializeJni(aKey);
 		}
-		else if (null == aKey)
+		catch (Exception e)
 		{
-			aErrorMsg.append("Invalid input parameters in serializeDataWithKey()");
-		}
-		else
-		{
-			aErrorMsg.setLength(0);
-			try
-			{
-				pickleRetValue = serializeJni(aKey);
-			}
-			catch (Exception e)
-			{
-				LOGGER.error("## serialize() failed " + e.getMessage());
-				aErrorMsg.append(e.getMessage());
-			}
+			LOGGER.error("## serialize() failed " + e.getMessage());
+			aErrorMsg.append(e.getMessage());
 		}
 		
 		return pickleRetValue;
@@ -473,22 +469,14 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * @throws Exception the exception
 	 */
 	@Override
-	protected void deserialize(byte[] aSerializedData, byte[] aKey)
+	protected void deserialize(@Nonnull byte[] aSerializedData, @Nonnull byte[] aKey)
 			throws Exception
 	{
 		String errorMsg = null;
 		
 		try
 		{
-			if ((null == aSerializedData) || (null == aKey))
-			{
-				LOGGER.error("## deserialize(): invalid input parameters");
-				errorMsg = "invalid input parameters";
-			}
-			else
-			{
-				mNativeId = deserializeJni(aSerializedData, aKey);
-			}
+			mNativeId = deserializeJni(aSerializedData, aKey);
 		}
 		catch (Exception e)
 		{
@@ -496,7 +484,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 			errorMsg = e.getMessage();
 		}
 		
-		if (!errorMsg.isEmpty())
+		if (errorMsg != null)
 		{
 			releaseAccount();
 			throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_DESERIALIZATION, errorMsg);
