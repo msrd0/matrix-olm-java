@@ -1,8 +1,7 @@
-image: msrd0/gradle
+image: msrd0/gradle-cross
 
 build:
   stage: build
-  image: msrd0/gradle-cross
   before_script:
     - git submodule update --init
     - mkdir -p .gradle

@@ -191,7 +191,7 @@ public class OlmOutboundGroupSession extends CommonSerializeUtils implements Ser
 	 * @throws OlmException the encryption failure reason
 	 */
 	@Nullable
-	public String encryptMessage(String aClearMsg)
+	public String encryptMessage(@Nonnull String aClearMsg)
 			throws OlmException
 	{
 		String retValue = null;
