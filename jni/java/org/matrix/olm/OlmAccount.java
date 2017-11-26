@@ -17,6 +17,7 @@
 package org.matrix.olm;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.matrix.olm.OlmException.*;
 
 import java.io.*;
 
@@ -76,7 +77,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 		}
 		catch (Exception e)
 		{
-			throw new OlmException(OlmException.EXCEPTION_CODE_INIT_ACCOUNT_CREATION, e.getMessage());
+			throw new OlmException(EXCEPTION_CODE_INIT_ACCOUNT_CREATION, e.getMessage());
 		}
 	}
 	
@@ -142,12 +143,10 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * @return identity keys dictionary if operation succeeds, null otherwise
 	 * @throws OlmException the failure reason
 	 */
-	@Nullable
+	@Nonnull
 	public JsonObject identityKeys()
 			throws OlmException
 	{
-		JsonObject identityKeysJsonObj = null;
-		
 		byte[] identityKeysBuffer;
 		
 		try
@@ -157,26 +156,18 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 		catch (Exception e)
 		{
 			LOGGER.error("## identityKeys(): Failure - " + e.getMessage());
-			throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_IDENTITY_KEYS, e.getMessage());
+			throw new OlmException(EXCEPTION_CODE_ACCOUNT_IDENTITY_KEYS, e.getMessage());
 		}
 		
 		if (null != identityKeysBuffer)
 		{
-			try
-			{
-				identityKeysJsonObj = (JsonObject) new Parser().parse(new ByteArrayInputStream(identityKeysBuffer), UTF_8);
-			}
-			catch (Exception e)
-			{
-				LOGGER.error("## identityKeys(): Exception - Msg=" + e.getMessage());
-			}
+			JsonObject identityKeysJson = (JsonObject) new Parser().parse(new ByteArrayInputStream(identityKeysBuffer), UTF_8);
+			if (identityKeysJson == null)
+				throw new OlmException(EXCEPTION_CODE_ACCOUNT_IDENTITY_KEYS, "failed to parse json");
+			return identityKeysJson;
 		}
 		else
-		{
-			LOGGER.error("## identityKeys(): Failure - identityKeysJni()=null");
-		}
-		
-		return identityKeysJsonObj;
+			throw new OlmException(EXCEPTION_CODE_ACCOUNT_IDENTITY_KEYS, "identityKeysJni()=null");
 	}
 	
 	/**
@@ -222,7 +213,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 		}
 		catch (Exception e)
 		{
-			throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_GENERATE_ONE_TIME_KEYS, e.getMessage());
+			throw new OlmException(EXCEPTION_CODE_ACCOUNT_GENERATE_ONE_TIME_KEYS, e.getMessage());
 		}
 	}
 	
@@ -252,11 +243,10 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * @return one time keys in string dictionary.
 	 * @throws OlmException the failure reason
 	 */
-	@Nullable
+	@Nonnull
 	public JsonObject oneTimeKeys()
 			throws OlmException
 	{
-		JsonObject oneTimeKeysJsonObj = null;
 		byte[] oneTimeKeysBuffer;
 		
 		try
@@ -265,26 +255,18 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 		}
 		catch (Exception e)
 		{
-			throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_ONE_TIME_KEYS, e.getMessage());
+			throw new OlmException(EXCEPTION_CODE_ACCOUNT_ONE_TIME_KEYS, e.getMessage());
 		}
 		
 		if (null != oneTimeKeysBuffer)
 		{
-			try
-			{
-				oneTimeKeysJsonObj = (JsonObject) new Parser().parse(new ByteArrayInputStream(oneTimeKeysBuffer), UTF_8);
-			}
-			catch (Exception e)
-			{
-				LOGGER.error("## oneTimeKeys(): Exception - Msg=" + e.getMessage());
-			}
+			JsonObject oneTimeKeysJson = (JsonObject) new Parser().parse(new ByteArrayInputStream(oneTimeKeysBuffer), UTF_8);
+			if (oneTimeKeysJson == null)
+				throw new OlmException(EXCEPTION_CODE_ACCOUNT_ONE_TIME_KEYS, "failed to parse json");
+			return oneTimeKeysJson;
 		}
 		else
-		{
-			LOGGER.error("## oneTimeKeys(): Failure - identityKeysJni()=null");
-		}
-		
-		return oneTimeKeysJsonObj;
+			throw new OlmException(EXCEPTION_CODE_ACCOUNT_ONE_TIME_KEYS, "oneTimeKeysJni()=null");
 	}
 	
 	/**
@@ -303,19 +285,16 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * @param aSession session instance
 	 * @throws OlmException the failure reason
 	 */
-	public void removeOneTimeKeys(@Nullable OlmSession aSession)
+	public void removeOneTimeKeys(@Nonnull OlmSession aSession)
 			throws OlmException
 	{
-		if (null != aSession)
+		try
 		{
-			try
-			{
-				removeOneTimeKeysJni(aSession.getOlmSessionId());
-			}
-			catch (Exception e)
-			{
-				throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_REMOVE_ONE_TIME_KEYS, e.getMessage());
-			}
+			removeOneTimeKeysJni(aSession.getOlmSessionId());
+		}
+		catch (Exception e)
+		{
+			throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_REMOVE_ONE_TIME_KEYS, e.getMessage());
 		}
 	}
 	
@@ -359,32 +338,27 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * @return the signed message
 	 * @throws OlmException the failure reason
 	 */
-	@Nullable
+	@Nonnull
 	public String signMessage(@Nonnull String aMessage)
 			throws OlmException
 	{
-		String result = null;
+		byte[] signedMessage = null;
 		
 		try
 		{
-			byte[] utf8String = aMessage.getBytes("UTF-8");
+			byte[] utf8String = aMessage.getBytes(UTF_8);
 			
-			if (null != utf8String)
-			{
-				byte[] signedMessage = signMessageJni(utf8String);
-				
-				if (null != signedMessage)
-				{
-					result = new String(signedMessage, "UTF-8");
-				}
-			}
+			signedMessage = signMessageJni(utf8String);
 		}
 		catch (Exception e)
 		{
-			throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_SIGN_MESSAGE, e.getMessage());
+			throw new OlmException(EXCEPTION_CODE_ACCOUNT_SIGN_MESSAGE, e.getMessage());
 		}
 		
-		return result;
+		if (signedMessage == null)
+			throw new OlmException(EXCEPTION_CODE_ACCOUNT_SIGN_MESSAGE, "signMessageJni()=null");
+		
+		return new String(signedMessage, UTF_8);
 	}
 	
 	/**
@@ -406,7 +380,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * @param aOutStream output stream for serializing
 	 * @throws IOException exception
 	 */
-	private void writeObject(ObjectOutputStream aOutStream)
+	private void writeObject(@Nonnull ObjectOutputStream aOutStream)
 			throws IOException
 	{
 		serialize(aOutStream);
@@ -418,7 +392,7 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * @param aInStream input stream
 	 * @throws Exception exception
 	 */
-	private void readObject(ObjectInputStream aInStream)
+	private void readObject(@Nonnull ObjectInputStream aInStream)
 			throws Exception
 	{
 		deserialize(aInStream);

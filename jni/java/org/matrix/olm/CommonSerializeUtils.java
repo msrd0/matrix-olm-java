@@ -65,7 +65,7 @@ abstract class CommonSerializeUtils
 	 * @throws Exception the exception
 	 */
 	protected void deserialize(@Nonnull ObjectInputStream aInStream)
-			throws Exception
+			throws IOException, ClassNotFoundException
 	{
 		aInStream.defaultReadObject();
 		
