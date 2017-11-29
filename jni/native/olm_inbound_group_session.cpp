@@ -17,8 +17,6 @@
 
 #include "olm_inbound_group_session.h"
 
-#include <stdio.h>
-
 using namespace AndroidOlmSdk;
 
 /**
