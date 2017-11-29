@@ -16,9 +16,10 @@
  */
 package org.matrix.olm;
 
+import static java.nio.charset.StandardCharsets.*;
+import static org.matrix.olm.OlmException.*;
+
 import java.io.*;
-
-
 import javax.annotation.*;
 
 import org.slf4j.*;
@@ -46,10 +47,28 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 	public static class DecryptMessageResult
 	{
 		/** decrypt message **/
-		public String mDecryptedMessage;
+		@Nonnull
+		private final String mDecryptedMessage;
 		
 		/** decrypt index **/
-		public long mIndex;
+		private final long mIndex;
+		
+		public DecryptMessageResult(@Nonnull byte[] decryptedMessage, long index)
+		{
+			mDecryptedMessage = new String(decryptedMessage, UTF_8);
+			mIndex = index;
+		}
+		
+		@Nonnull
+		public String getDecryptedMessage()
+		{
+			return mDecryptedMessage;
+		}
+		
+		public long getIndex()
+		{
+			return mIndex;
+		}
 	}
 	
 	/**
@@ -81,17 +100,17 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 		if (aSessionKey.isEmpty())
 		{
 			LOGGER.error("## initInboundGroupSession(): invalid session key");
-			throw new OlmException(OlmException.EXCEPTION_CODE_INIT_INBOUND_GROUP_SESSION, "invalid session key");
+			throw new OlmException(EXCEPTION_CODE_INIT_INBOUND_GROUP_SESSION, "invalid session key");
 		}
 		else
 		{
 			try
 			{
-				mNativeId = createNewSessionJni(aSessionKey.getBytes("UTF-8"), isImported);
+				mNativeId = createNewSessionJni(aSessionKey.getBytes(UTF_8), isImported);
 			}
 			catch (Exception e)
 			{
-				throw new OlmException(OlmException.EXCEPTION_CODE_INIT_INBOUND_GROUP_SESSION, e.getMessage());
+				throw new OlmException(EXCEPTION_CODE_INIT_INBOUND_GROUP_SESSION, e.getMessage());
 			}
 		}
 	}
@@ -163,12 +182,12 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 	{
 		try
 		{
-			return new String(sessionIdentifierJni(), "UTF-8");
+			return new String(sessionIdentifierJni(), UTF_8);
 		}
 		catch (Exception e)
 		{
 			LOGGER.error("## sessionIdentifier() failed " + e.getMessage());
-			throw new OlmException(OlmException.EXCEPTION_CODE_INBOUND_GROUP_SESSION_IDENTIFIER, e.getMessage());
+			throw new OlmException(EXCEPTION_CODE_INBOUND_GROUP_SESSION_IDENTIFIER, e.getMessage());
 		}
 	}
 	
@@ -198,7 +217,7 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 		catch (Exception e)
 		{
 			LOGGER.error("## getFirstKnownIndex() failed " + e.getMessage());
-			throw new OlmException(OlmException.EXCEPTION_CODE_INBOUND_GROUP_SESSION_FIRST_KNOWN_INDEX, e.getMessage());
+			throw new OlmException(EXCEPTION_CODE_INBOUND_GROUP_SESSION_FIRST_KNOWN_INDEX, e.getMessage());
 		}
 		
 		return index;
@@ -230,7 +249,7 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 		catch (Exception e)
 		{
 			LOGGER.error("## isVerified() failed " + e.getMessage());
-			throw new OlmException(OlmException.EXCEPTION_CODE_INBOUND_GROUP_SESSION_IS_VERIFIED, e.getMessage());
+			throw new OlmException(EXCEPTION_CODE_INBOUND_GROUP_SESSION_IS_VERIFIED, e.getMessage());
 		}
 		
 		return isVerified;
@@ -262,13 +281,13 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 			
 			if (null != bytesBuffer)
 			{
-				result = new String(bytesBuffer, "UTF-8");
+				result = new String(bytesBuffer, UTF_8);
 			}
 		}
 		catch (Exception e)
 		{
 			LOGGER.error("## export() failed " + e.getMessage());
-			throw new OlmException(OlmException.EXCEPTION_CODE_INBOUND_GROUP_SESSION_EXPORT, e.getMessage());
+			throw new OlmException(EXCEPTION_CODE_INBOUND_GROUP_SESSION_EXPORT, e.getMessage());
 		}
 		
 		return result;
@@ -291,28 +310,23 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 	 * @return the decrypted message information
 	 * @throws OlmException teh failure reason
 	 */
-	@Nonnull
+	@Nullable
 	public DecryptMessageResult decryptMessage(@Nonnull String aEncryptedMsg)
 			throws OlmException
 	{
-		DecryptMessageResult result = new DecryptMessageResult();
+		DecryptMessageResult decryptMessageResult;
 		
 		try
 		{
-			byte[] decryptedMessageBuffer = decryptMessageJni(aEncryptedMsg.getBytes("UTF-8"), result);
-			
-			if (null != decryptedMessageBuffer)
-			{
-				result.mDecryptedMessage = new String(decryptedMessageBuffer, "UTF-8");
-			}
+			decryptMessageResult = decryptMessageJni(aEncryptedMsg.getBytes(UTF_8));
 		}
 		catch (Exception e)
 		{
 			LOGGER.error("## decryptMessage() failed " + e.getMessage());
-			throw new OlmException(OlmException.EXCEPTION_CODE_INBOUND_GROUP_SESSION_DECRYPT_SESSION, e.getMessage());
+			throw new OlmException(EXCEPTION_CODE_INBOUND_GROUP_SESSION_DECRYPT_SESSION, e.getMessage());
 		}
 		
-		return result;
+		return decryptMessageResult;
 	}
 	
 	/**
@@ -320,10 +334,9 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 	 * An exception is thrown if the operation fails.
 	 *
 	 * @param aEncryptedMsg         the encrypted message
-	 * @param aDecryptMessageResult the decryptMessage information
 	 * @return the decrypted message
 	 */
-	private native byte[] decryptMessageJni(byte[] aEncryptedMsg, DecryptMessageResult aDecryptMessageResult);
+	private native DecryptMessageResult decryptMessageJni(byte[] aEncryptedMsg);
 	
 	//==============================================================================================================
 	// Serialization management
@@ -418,7 +431,7 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 		if (errorMsg != null)
 		{
 			releaseSession();
-			throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_DESERIALIZATION, errorMsg);
+			throw new OlmException(EXCEPTION_CODE_ACCOUNT_DESERIALIZATION, errorMsg);
 		}
 	}
 	

@@ -17,6 +17,8 @@
 
 #include "olm_inbound_group_session.h"
 
+#include <stdio.h>
+
 using namespace AndroidOlmSdk;
 
 /**
@@ -200,18 +202,19 @@ JNIEXPORT jbyteArray OLM_INBOUND_GROUP_SESSION_FUNC_DEF(sessionIdentifierJni)(JN
  * Decrypt a message.
  * An exception is thrown if the operation fails.
  * @param aEncryptedMsg the encrypted message
- * @param aDecryptMessageResult the decryptMessage information
  * @return the decrypted message
  */
-JNIEXPORT jbyteArray OLM_INBOUND_GROUP_SESSION_FUNC_DEF(decryptMessageJni)(JNIEnv *env, jobject thiz, jbyteArray aEncryptedMsgBuffer, jobject aDecryptionResult)
+JNIEXPORT jobject OLM_INBOUND_GROUP_SESSION_FUNC_DEF(decryptMessageJni)(JNIEnv *env, jobject thiz, jbyteArray aEncryptedMsgBuffer)
 {
     jbyteArray decryptedMsgBuffer = 0;
+    jlong decryptMsgIndex = 0;
+    jobject decryptMsgResult = 0;
     const char* errorMessage = NULL;
 
     OlmInboundGroupSession *sessionPtr = getInboundGroupSessionInstanceId(env, thiz);
     jbyte *encryptedMsgPtr = NULL;
-    jclass indexObjJClass = 0;
-    jfieldID indexMsgFieldId;
+    jclass resultObjJClass = 0;
+    jmethodID resultObjCtor = 0;
 
     LOGD("## decryptMessageJni(): inbound group session IN");
 
@@ -225,25 +228,20 @@ JNIEXPORT jbyteArray OLM_INBOUND_GROUP_SESSION_FUNC_DEF(decryptMessageJni)(JNIEn
         LOGE(" ## decryptMessageJni(): failure - invalid encrypted message");
         errorMessage = "invalid encrypted message";
     }
-    else if (!aDecryptionResult)
-    {
-        LOGE(" ## decryptMessageJni(): failure - invalid index object");
-        errorMessage = "invalid index object";
-    }
     else if (!(encryptedMsgPtr = env->GetByteArrayElements(aEncryptedMsgBuffer, 0)))
     {
         LOGE(" ## decryptMessageJni(): failure - encrypted message JNI allocation OOM");
         errorMessage = "encrypted message JNI allocation OOM";
     }
-    else if (!(indexObjJClass = env->GetObjectClass(aDecryptionResult)))
+    else if (!(resultObjJClass = env->FindClass("org/matrix/olm/OlmInboundGroupSession$DecryptMessageResult")))
     {
-        LOGE("## decryptMessageJni(): failure - unable to get index class");
-        errorMessage = "unable to get index class";
+        LOGE("## decryptMessageJni(): failure - unable to get result class");
+        errorMessage = "unable to get result class";
     }
-    else if (!(indexMsgFieldId = env->GetFieldID(indexObjJClass,"mIndex","J")))
+    else if (!(resultObjCtor = env->GetMethodID(resultObjJClass, "<init>", "([BJ)V")))
     {
-        LOGE("## decryptMessageJni(): failure - unable to get index type field");
-        errorMessage = "unable to get index type field";
+        LOGE("## decryptMessageJni(): failure - unable to get result class constructor");
+        errorMessage = "unable to get result class constructor";
     }
     else
     {
@@ -296,12 +294,14 @@ JNIEXPORT jbyteArray OLM_INBOUND_GROUP_SESSION_FUNC_DEF(decryptMessageJni)(JNIEn
                 else
                 {
                     // update index
-                    env->SetLongField(aDecryptionResult, indexMsgFieldId, (jlong)messageIndex);
+                    decryptMsgIndex = (jlong) messageIndex;
 
                     decryptedMsgBuffer = env->NewByteArray(plaintextLength);
                     env->SetByteArrayRegion(decryptedMsgBuffer, 0 , plaintextLength, (jbyte*)plainTextMsgPtr);
 
                     LOGD(" ## decryptMessageJni(): UTF-8 Conversion - decrypted returnedLg=%lu OK",static_cast<long unsigned int>(plaintextLength));
+
+                    decryptMsgResult = env->NewObject(resultObjJClass, resultObjCtor, decryptedMsgBuffer, decryptMsgIndex);
                 }
 
                 if (plainTextMsgPtr)
@@ -329,7 +329,7 @@ JNIEXPORT jbyteArray OLM_INBOUND_GROUP_SESSION_FUNC_DEF(decryptMessageJni)(JNIEn
         env->ThrowNew(env->FindClass("java/lang/Exception"), errorMessage);
     }
 
-    return decryptedMsgBuffer;
+    return decryptMsgResult;
 }
 
 /**
