@@ -16,8 +16,10 @@
  */
 package org.matrix.olm;
 
-import java.io.*;
+import static java.nio.charset.StandardCharsets.*;
+import static org.matrix.olm.OlmException.*;
 
+import java.io.*;
 import javax.annotation.*;
 
 import org.slf4j.*;
@@ -50,7 +52,7 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 		}
 		catch (Exception e)
 		{
-			throw new OlmException(OlmException.EXCEPTION_CODE_INIT_SESSION_CREATION, e.getMessage());
+			throw new OlmException(EXCEPTION_CODE_INIT_SESSION_CREATION, e.getMessage());
 		}
 	}
 	
@@ -119,19 +121,19 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 		if (aTheirIdentityKey.isEmpty() || aTheirOneTimeKey.isEmpty())
 		{
 			LOGGER.error("## initOutboundSession(): invalid input parameters");
-			throw new OlmException(OlmException.EXCEPTION_CODE_SESSION_INIT_OUTBOUND_SESSION, "invalid input parameters");
+			throw new OlmException(EXCEPTION_CODE_SESSION_INIT_OUTBOUND_SESSION, "invalid input parameters");
 		}
 		else
 		{
 			try
 			{
 				initOutboundSessionJni(aAccount.getOlmAccountId(),
-						aTheirIdentityKey.getBytes("UTF-8"), aTheirOneTimeKey.getBytes("UTF-8"));
+						aTheirIdentityKey.getBytes(UTF_8), aTheirOneTimeKey.getBytes(UTF_8));
 			}
 			catch (Exception e)
 			{
 				LOGGER.error("## initOutboundSession(): " + e.getMessage());
-				throw new OlmException(OlmException.EXCEPTION_CODE_SESSION_INIT_OUTBOUND_SESSION, e.getMessage());
+				throw new OlmException(EXCEPTION_CODE_SESSION_INIT_OUTBOUND_SESSION, e.getMessage());
 			}
 		}
 	}
@@ -208,19 +210,19 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 		if (aPreKeyMsg.isEmpty())
 		{
 			LOGGER.error("## initInboundSessionFrom(): invalid input parameters");
-			throw new OlmException(OlmException.EXCEPTION_CODE_SESSION_INIT_INBOUND_SESSION_FROM, "invalid input parameters");
+			throw new OlmException(EXCEPTION_CODE_SESSION_INIT_INBOUND_SESSION_FROM, "invalid input parameters");
 		}
 		else
 		{
 			try
 			{
 				initInboundSessionFromIdKeyJni(aAccount.getOlmAccountId(),
-						aTheirIdentityKey.getBytes("UTF-8"), aPreKeyMsg.getBytes("UTF-8"));
+						aTheirIdentityKey.getBytes(UTF_8), aPreKeyMsg.getBytes(UTF_8));
 			}
 			catch (Exception e)
 			{
 				LOGGER.error("## initInboundSessionFrom(): " + e.getMessage());
-				throw new OlmException(OlmException.EXCEPTION_CODE_SESSION_INIT_INBOUND_SESSION_FROM, e.getMessage());
+				throw new OlmException(EXCEPTION_CODE_SESSION_INIT_INBOUND_SESSION_FROM, e.getMessage());
 			}
 		}
 	}
@@ -255,13 +257,13 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 			
 			if (null != buffer)
 			{
-				return new String(buffer, "UTF-8");
+				return new String(buffer, UTF_8);
 			}
 		}
 		catch (Exception e)
 		{
 			LOGGER.error("## sessionIdentifier(): " + e.getMessage());
-			throw new OlmException(OlmException.EXCEPTION_CODE_SESSION_SESSION_IDENTIFIER, e.getMessage());
+			throw new OlmException(EXCEPTION_CODE_SESSION_SESSION_IDENTIFIER, e.getMessage());
 		}
 		
 		return null;
@@ -289,7 +291,7 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 		
 		try
 		{
-			retCode = matchesInboundSessionJni(aOneTimeKeyMsg.getBytes("UTF-8"));
+			retCode = matchesInboundSessionJni(aOneTimeKeyMsg.getBytes(UTF_8));
 		}
 		catch (Exception e)
 		{
@@ -324,7 +326,7 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 		
 		try
 		{
-			retCode = matchesInboundSessionFromIdKeyJni(aTheirIdentityKey.getBytes("UTF-8"), aOneTimeKeyMsg.getBytes("UTF-8"));
+			retCode = matchesInboundSessionFromIdKeyJni(aTheirIdentityKey.getBytes(UTF_8), aOneTimeKeyMsg.getBytes(UTF_8));
 		}
 		catch (Exception e)
 		{
@@ -348,7 +350,7 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	/**
 	 * Encrypt a message using the session.<br>
 	 * The encrypted message is returned in a OlmMessage object.
-	 * Public API for {@link #encryptMessageJni(byte[], OlmMessage)}.
+	 * Public API for {@link #encryptMessageJni(byte[])}.
 	 *
 	 * @param aClearMsg message to encrypted
 	 * @return the encrypted message
@@ -358,24 +360,15 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	public OlmMessage encryptMessage(@Nonnull String aClearMsg)
 			throws OlmException
 	{
-		OlmMessage encryptedMsgRetValue = new OlmMessage();
-		
 		try
 		{
-			byte[] encryptedMessageBuffer = encryptMessageJni(aClearMsg.getBytes("UTF-8"), encryptedMsgRetValue);
-			
-			if (null != encryptedMessageBuffer)
-			{
-				encryptedMsgRetValue.mCipherText = new String(encryptedMessageBuffer, "UTF-8");
-			}
+			return encryptMessageJni(aClearMsg.getBytes(UTF_8));
 		}
 		catch (Exception e)
 		{
 			LOGGER.error("## encryptMessage(): failed " + e.getMessage());
-			throw new OlmException(OlmException.EXCEPTION_CODE_SESSION_ENCRYPT_MESSAGE, e.getMessage());
+			throw new OlmException(EXCEPTION_CODE_SESSION_ENCRYPT_MESSAGE, e.getMessage());
 		}
-		
-		return encryptedMsgRetValue;
 	}
 	
 	/**
@@ -383,10 +376,9 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * An exception is thrown if the operation fails.
 	 *
 	 * @param aClearMsg     clear text message
-	 * @param aEncryptedMsg ciphered message
 	 * @return the encrypted message
 	 */
-	private native byte[] encryptMessageJni(byte[] aClearMsg, OlmMessage aEncryptedMsg);
+	private native OlmMessage encryptMessageJni(byte[] aClearMsg);
 	
 	/**
 	 * Decrypt a message using the session.<br>
@@ -402,12 +394,12 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	{
 		try
 		{
-			return new String(decryptMessageJni(aEncryptedMsg), "UTF-8");
+			return new String(decryptMessageJni(aEncryptedMsg), UTF_8);
 		}
 		catch (Exception e)
 		{
 			LOGGER.error("## decryptMessage(): failed " + e.getMessage());
-			throw new OlmException(OlmException.EXCEPTION_CODE_SESSION_DECRYPT_MESSAGE, e.getMessage());
+			throw new OlmException(EXCEPTION_CODE_SESSION_DECRYPT_MESSAGE, e.getMessage());
 		}
 	}
 	
@@ -515,7 +507,7 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 		if (errorMsg != null)
 		{
 			releaseSession();
-			throw new OlmException(OlmException.EXCEPTION_CODE_ACCOUNT_DESERIALIZATION, errorMsg);
+			throw new OlmException(EXCEPTION_CODE_ACCOUNT_DESERIALIZATION, errorMsg);
 		}
 	}
 	

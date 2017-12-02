@@ -16,6 +16,10 @@
  */
 package org.matrix.olm;
 
+import static java.nio.charset.StandardCharsets.*;
+
+import javax.annotation.Nonnull;
+
 /**
  * Message class used in Olm sessions to contain the encrypted data.<br>
  * See {@link OlmSession#decryptMessage(OlmMessage)} and {@link OlmSession#encryptMessage(String)}.
@@ -28,9 +32,30 @@ public class OlmMessage
 	/** normal message type **/
 	public final static int MESSAGE_TYPE_MESSAGE = 1;
 	
-	/** the encrypted message **/
-	public String mCipherText;
+	/** The encrypted message. **/
+	@Nonnull
+	private final String mCipherText;
 	
-	/** defined by {@link #MESSAGE_TYPE_MESSAGE} or {@link #MESSAGE_TYPE_PRE_KEY} **/
-	public long mType;
+	/** Either {@link #MESSAGE_TYPE_MESSAGE} or {@link #MESSAGE_TYPE_PRE_KEY}. **/
+	private final int mType;
+	
+	/** Initialise this OlmMessage. */
+	public OlmMessage(@Nonnull byte[] cipherText, int type)
+	{
+		mCipherText = new String(cipherText, UTF_8);
+		mType = type;
+	}
+	
+	/** Get the encrypted message. */
+	@Nonnull
+	public String getCipherText()
+	{
+		return mCipherText;
+	}
+	
+	/** Get the message type. Either {@link #MESSAGE_TYPE_MESSAGE} or {@link #MESSAGE_TYPE_PRE_KEY}. */
+	public int getType()
+	{
+		return mType;
+	}
 }

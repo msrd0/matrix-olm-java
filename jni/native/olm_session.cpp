@@ -462,18 +462,19 @@ JNIEXPORT jboolean JNICALL OLM_SESSION_FUNC_DEF(matchesInboundSessionFromIdKeyJn
  * Encrypt a message using the session.<br>
  * An exception is thrown if the operation fails.
  * @param aClearMsg clear text message
- * @param [out] aEncryptedMsg ciphered message
  * @return the encrypted message
  */
-JNIEXPORT jbyteArray OLM_SESSION_FUNC_DEF(encryptMessageJni)(JNIEnv *env, jobject thiz, jbyteArray aClearMsgBuffer, jobject aEncryptedMsg)
+JNIEXPORT jobject OLM_SESSION_FUNC_DEF(encryptMessageJni)(JNIEnv *env, jobject thiz, jbyteArray aClearMsgBuffer)
 {
-    jbyteArray encryptedMsgRet = 0;
+	jbyteArray encryptedMsgRet = 0;
+	jlong encryptedMsgType = 0;
+    jobject encryptedMsg = 0;
     const char* errorMessage = NULL;
 
     OlmSession *sessionPtr = getSessionInstanceId(env, thiz);
     jbyte *clearMsgPtr = NULL;
     jclass encryptedMsgJClass = 0;
-    jfieldID typeMsgFieldId;
+    jmethodID encryptedMsgCtor = 0;
 
     LOGD("## encryptMessageJni(): IN ");
 
@@ -487,23 +488,19 @@ JNIEXPORT jbyteArray OLM_SESSION_FUNC_DEF(encryptMessageJni)(JNIEnv *env, jobjec
         LOGE("## encryptMessageJni(): failure - invalid clear message");
         errorMessage = "invalid clear message";
     }
-    else if (!aEncryptedMsg)
-    {
-        LOGE("## encryptMessageJni(): failure - invalid encrypted message");
-    }
     else if (!(clearMsgPtr = env->GetByteArrayElements(aClearMsgBuffer, 0)))
     {
         LOGE("## encryptMessageJni(): failure - clear message JNI allocation OOM");
         errorMessage = "clear message JNI allocation OOM";
     }
-    else if (!(encryptedMsgJClass = env->GetObjectClass(aEncryptedMsg)))
+    else if (!(encryptedMsgJClass = env->FindClass("org/matrix/olm/OlmMessage")))
     {
-        LOGE("## encryptMessageJni(): failure - unable to get crypted message class");
+        LOGE("## encryptMessageJni(): failure - unable to get message class");
         errorMessage = "unable to get crypted message class";
     }
-    else if (!(typeMsgFieldId = env->GetFieldID(encryptedMsgJClass,"mType","J")))
+    else if (!(encryptedMsgCtor = env->GetMethodID(encryptedMsgJClass, "<init>", "([BI)V")))
     {
-        LOGE("## encryptMessageJni(): failure - unable to get message type field");
+        LOGE("## encryptMessageJni(): failure - unable to get message class constructor");
         errorMessage = "unable to get message type field";
     }
     else
@@ -561,10 +558,12 @@ JNIEXPORT jbyteArray OLM_SESSION_FUNC_DEF(encryptMessageJni)(JNIEnv *env, jobjec
                 else
                 {
                     // update message type: PRE KEY or normal
-                    env->SetLongField(aEncryptedMsg, typeMsgFieldId, (jlong)messageType);
+                    encryptedMsgType = (jlong) messageType;
 
-                    encryptedMsgRet = env->NewByteArray(encryptedMsgLength);
+                	encryptedMsgRet = env->NewByteArray(encryptedMsgLength);
                     env->SetByteArrayRegion(encryptedMsgRet, 0 , encryptedMsgLength, (jbyte*)encryptedMsgPtr);
+
+                    encryptedMsg = env->NewObject(encryptedMsgJClass, encryptedMsgCtor, encryptedMsgRet, encryptedMsgType);
 
                     LOGD("## encryptMessageJni(): success - result=%lu Type=%lu encryptedMsg=%.*s", static_cast<long unsigned int>(result), static_cast<unsigned long int>(messageType), static_cast<int>(result), (const char*)encryptedMsgPtr);
                 }
@@ -588,7 +587,7 @@ JNIEXPORT jbyteArray OLM_SESSION_FUNC_DEF(encryptMessageJni)(JNIEnv *env, jobjec
         env->ThrowNew(env->FindClass("java/lang/Exception"), errorMessage);
     }
 
-    return encryptedMsgRet;
+    return encryptedMsg;
 }
 
 /**

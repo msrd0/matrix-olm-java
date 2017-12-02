@@ -43,7 +43,7 @@ JNIEXPORT jboolean OLM_SESSION_FUNC_DEF(matchesInboundSessionJni)(JNIEnv *env, j
 JNIEXPORT jboolean OLM_SESSION_FUNC_DEF(matchesInboundSessionFromIdKeyJni)(JNIEnv *env, jobject thiz, jbyteArray aTheirIdentityKey, jbyteArray aOneTimeKeyMsg);
 
 // encrypt/decrypt
-JNIEXPORT jbyteArray OLM_SESSION_FUNC_DEF(encryptMessageJni)(JNIEnv *env, jobject thiz, jbyteArray aClearMsg, jobject aEncryptedMsg);
+JNIEXPORT jobject OLM_SESSION_FUNC_DEF(encryptMessageJni)(JNIEnv *env, jobject thiz, jbyteArray aClearMsg);
 JNIEXPORT jbyteArray OLM_SESSION_FUNC_DEF(decryptMessageJni)(JNIEnv *env, jobject thiz, jobject aEncryptedMsg);
 
 JNIEXPORT jbyteArray OLM_SESSION_FUNC_DEF(getSessionIdentifierJni)(JNIEnv *env, jobject thiz);
