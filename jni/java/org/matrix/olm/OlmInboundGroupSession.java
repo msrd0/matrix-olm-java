@@ -55,7 +55,12 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 		
 		public DecryptMessageResult(@Nonnull byte[] decryptedMessage, long index)
 		{
-			mDecryptedMessage = new String(decryptedMessage, UTF_8);
+			this(new String(decryptedMessage, UTF_8), index);
+		}
+		
+		public DecryptMessageResult(@Nonnull String decryptedMessage, long index)
+		{
+			mDecryptedMessage = decryptedMessage;
 			mIndex = index;
 		}
 		

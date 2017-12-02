@@ -42,7 +42,13 @@ public class OlmMessage
 	/** Initialise this OlmMessage. */
 	public OlmMessage(@Nonnull byte[] cipherText, int type)
 	{
-		mCipherText = new String(cipherText, UTF_8);
+		this(new String(cipherText, UTF_8), type);
+	}
+	
+	/** Initialise this OlmMessage. */
+	public OlmMessage(@Nonnull String cipherText, int type)
+	{
+		mCipherText = cipherText;
 		mType = type;
 	}
 	
