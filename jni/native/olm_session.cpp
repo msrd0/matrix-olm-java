@@ -594,22 +594,18 @@ JNIEXPORT jobject OLM_SESSION_FUNC_DEF(encryptMessageJni)(JNIEnv *env, jobject t
  * Decrypt a message using the session.<br>
  * An exception is thrown if the operation fails.
  * @param aEncryptedMsg message to decrypt
+ * @param aEncryptedMsgType type of the message
  * @return decrypted message if operation succeed
  */
-JNIEXPORT jbyteArray OLM_SESSION_FUNC_DEF(decryptMessageJni)(JNIEnv *env, jobject thiz, jobject aEncryptedMsg)
+JNIEXPORT jbyteArray OLM_SESSION_FUNC_DEF(decryptMessageJni)(JNIEnv *env, jobject thiz, jbyteArray aEncryptedMsg, jint aEncryptedMsgType)
 {
     const char* errorMessage = NULL;
 
     jbyteArray decryptedMsgRet = 0;
 
-    jclass encryptedMsgJClass = 0;
-    jstring encryptedMsgJstring = 0; // <= obtained from encryptedMsgFieldId
-    // field IDs
-    jfieldID encryptedMsgFieldId;
-    jfieldID typeMsgFieldId;
     // ptrs
     OlmSession *sessionPtr = getSessionInstanceId(env, thiz);
-    const char *encryptedMsgPtr = NULL; // <= obtained from encryptedMsgJstring
+    jbyte *encryptedMsgPtr = NULL;
     uint8_t *plainTextMsgPtr = NULL;
     char *tempEncryptedPtr = NULL;
 
@@ -625,27 +621,7 @@ JNIEXPORT jbyteArray OLM_SESSION_FUNC_DEF(decryptMessageJni)(JNIEnv *env, jobjec
         LOGE("## decryptMessageJni(): failure - invalid encrypted message");
         errorMessage = "invalid encrypted message";
     }
-    else if (!(encryptedMsgJClass = env->GetObjectClass(aEncryptedMsg)))
-    {
-        LOGE("## decryptMessageJni(): failure - unable to get encrypted message class");
-        errorMessage = "unable to get encrypted message class";
-    }
-    else if (!(encryptedMsgFieldId = env->GetFieldID(encryptedMsgJClass,"mCipherText","Ljava/lang/String;")))
-    {
-        LOGE("## decryptMessageJni(): failure - unable to get message field");
-        errorMessage = "unable to get message field";
-    }
-    else if (!(typeMsgFieldId = env->GetFieldID(encryptedMsgJClass,"mType","J")))
-    {
-        LOGE("## decryptMessageJni(): failure - unable to get message type field");
-        errorMessage = "unable to get message type field";
-    }
-    else if (!(encryptedMsgJstring = (jstring)env->GetObjectField(aEncryptedMsg, encryptedMsgFieldId)))
-    {
-        LOGE("## decryptMessageJni(): failure - JNI encrypted object ");
-        errorMessage = "JNI encrypted object";
-    }
-    else if (!(encryptedMsgPtr = env->GetStringUTFChars(encryptedMsgJstring, 0)))
+    else if (!(encryptedMsgPtr = env->GetByteArrayElements(aEncryptedMsg, 0)))
     {
         LOGE("## decryptMessageJni(): failure - encrypted message JNI allocation OOM");
         errorMessage = "encrypted message JNI allocation OOM";
@@ -653,9 +629,9 @@ JNIEXPORT jbyteArray OLM_SESSION_FUNC_DEF(decryptMessageJni)(JNIEnv *env, jobjec
     else
     {
         // get message type
-        size_t encryptedMsgType = (size_t)env->GetLongField(aEncryptedMsg, typeMsgFieldId);
+        size_t encryptedMsgType = (size_t)aEncryptedMsgType;
         // get encrypted message length
-        size_t encryptedMsgLength = (size_t)env->GetStringUTFLength(encryptedMsgJstring);
+        size_t encryptedMsgLength = (size_t)env->GetArrayLength(aEncryptedMsg);
 
         // create a dedicated temp buffer to be used in next Olm API calls
         tempEncryptedPtr = static_cast<char*>(malloc(encryptedMsgLength*sizeof(uint8_t)));
@@ -707,7 +683,7 @@ JNIEXPORT jbyteArray OLM_SESSION_FUNC_DEF(decryptMessageJni)(JNIEnv *env, jobjec
     // free alloc
     if (encryptedMsgPtr)
     {
-        env->ReleaseStringUTFChars(encryptedMsgJstring, encryptedMsgPtr);
+        env->ReleaseByteArrayElements(aEncryptedMsg, encryptedMsgPtr, JNI_ABORT);
     }
 
     if (tempEncryptedPtr)

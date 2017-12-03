@@ -394,7 +394,7 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	{
 		try
 		{
-			return new String(decryptMessageJni(aEncryptedMsg), UTF_8);
+			return new String(decryptMessageJni(aEncryptedMsg.getCipherText().getBytes(UTF_8), aEncryptedMsg.getType()), UTF_8);
 		}
 		catch (Exception e)
 		{
@@ -408,9 +408,10 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * An exception is thrown if the operation fails.
 	 *
 	 * @param aEncryptedMsg message to decrypt
+	 * @param aEncryptedMsgType the message type
 	 * @return the decrypted message
 	 */
-	private native byte[] decryptMessageJni(OlmMessage aEncryptedMsg);
+	private native byte[] decryptMessageJni(byte[] aEncryptedMsg, int aEncryptedMsgType);
 	
 	//==============================================================================================================
 	// Serialization management
