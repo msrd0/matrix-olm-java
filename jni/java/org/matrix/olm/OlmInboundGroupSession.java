@@ -274,20 +274,17 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 	 * @return the session as String
 	 * @throws OlmException the failure reason
 	 */
-	@Nullable
+	@Nonnull
 	public String export(long messageIndex)
 			throws OlmException
 	{
-		String result = null;
+		byte bytesBuffer[];
 		
 		try
 		{
-			byte[] bytesBuffer = exportJni(messageIndex);
-			
-			if (null != bytesBuffer)
-			{
-				result = new String(bytesBuffer, UTF_8);
-			}
+			bytesBuffer = exportJni(messageIndex);
+			if (bytesBuffer == null)
+				throw new Exception("exportJni()=null");
 		}
 		catch (Exception e)
 		{
@@ -295,7 +292,7 @@ public class OlmInboundGroupSession extends CommonSerializeUtils implements Seri
 			throw new OlmException(EXCEPTION_CODE_INBOUND_GROUP_SESSION_EXPORT, e.getMessage());
 		}
 		
-		return result;
+		return new String(bytesBuffer, UTF_8);
 	}
 	
 	/**
