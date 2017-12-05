@@ -247,18 +247,18 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * @return the session ID
 	 * @throws OlmException the failure reason
 	 */
-	@Nullable
+	@Nonnull
 	public String sessionIdentifier()
 			throws OlmException
 	{
+		byte buffer[];
+		
 		try
 		{
-			byte[] buffer = getSessionIdentifierJni();
+			buffer = getSessionIdentifierJni();
 			
-			if (null != buffer)
-			{
-				return new String(buffer, UTF_8);
-			}
+			if (buffer == null)
+				throw new Exception("getSessionIdentifierJni()=null");
 		}
 		catch (Exception e)
 		{
@@ -266,7 +266,7 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 			throw new OlmException(EXCEPTION_CODE_SESSION_SESSION_IDENTIFIER, e.getMessage());
 		}
 		
-		return null;
+		return new String(buffer, UTF_8);
 	}
 	
 	/**
