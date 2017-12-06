@@ -17,9 +17,11 @@
 package org.matrix.olm;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.annotation.meta.When.MAYBE;
 import static org.matrix.olm.OlmException.*;
 
 import java.io.*;
+import java.util.*;
 
 import javax.annotation.*;
 
@@ -61,6 +63,56 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	
 	private static final long serialVersionUID = 3497486121598434824L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(OlmAccount.class);
+	
+	/**
+	 * This class stores the identity keys (ed25519 and curve25519) of an account.
+	 */
+	public static class IdentityKeys
+	{
+		@Nullable private JsonObject json;
+		@Nullable private String ed25519;
+		@Nullable private String curve25519;
+		
+		public IdentityKeys(@Nonnull JsonObject identityKeysJson)
+		{
+			this.json = identityKeysJson;
+		}
+		
+		public IdentityKeys(@Nonnull String ed25519, @Nonnull String curve25519)
+		{
+			this.ed25519 = ed25519;
+			this.curve25519 = curve25519;
+		}
+		
+		@Nonnull
+		public JsonObject getJson()
+		{
+			if (json == null)
+			{
+				Map<String, Object> keys = new HashMap<>();
+				keys.put(JSON_KEY_FINGER_PRINT_KEY, ed25519);
+				keys.put(JSON_KEY_IDENTITY_KEY, curve25519);
+				json = new JsonObject(keys);
+			}
+			return json;
+		}
+		
+		@Nonnull
+		public String getEd25519()
+		{
+			if (ed25519 == null)
+				ed25519 = (String) json.get(JSON_KEY_FINGER_PRINT_KEY);
+			return ed25519;
+		}
+		
+		@Nonnull
+		public String getCurve25519()
+		{
+			if (curve25519 == null)
+				curve25519 = (String) json.get(JSON_KEY_IDENTITY_KEY);
+			return curve25519;
+		}
+	}
 	
 	/**
 	 * Account Id returned by JNI.
@@ -132,7 +184,22 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	}
 	
 	/**
-	 * Return the identity keys (identity and fingerprint keys) in a dictionary.<br>
+	 * Return the identity keys (identity and fingerprint keys).<br>
+	 * Public API for {@link #identityKeysJni()}.
+	 *
+	 * @return identity keys
+	 * @throws OlmException the failure reason
+	 * @see #identityKeysJson()
+	 */
+	@Nonnull
+	public IdentityKeys identityKeys()
+			throws OlmException
+	{
+		return new IdentityKeys(identityKeysJson());
+	}
+	
+	/**
+	 * Return the identity keys (identity and fingerprint keys) in a json object.<br>
 	 * Public API for {@link #identityKeysJni()}.<br>
 	 * Ex:<tt>
 	 * {
@@ -140,11 +207,11 @@ public class OlmAccount extends CommonSerializeUtils implements Serializable
 	 * "ed25519":"+v8SOlOASFTMrX3MCKBM4iVnYoZ+JIjpNt1fi8Z9O2I"
 	 * }</tt>
 	 *
-	 * @return identity keys dictionary if operation succeeds, null otherwise
+	 * @return identity keys json if operation succeeds
 	 * @throws OlmException the failure reason
 	 */
 	@Nonnull
-	public JsonObject identityKeys()
+	public JsonObject identityKeysJson()
 			throws OlmException
 	{
 		byte[] identityKeysBuffer;
