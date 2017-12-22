@@ -521,5 +521,43 @@ public class OlmSession extends CommonSerializeUtils implements Serializable
 	 * @return the deserialized session
 	 **/
 	private native long deserializeJni(byte[] aSerializedData, byte[] aKey);
+	
+	
+	/**
+	 * Hash code of the session identifier.
+	 */
+	@Override
+	public int hashCode()
+	{
+		try
+		{
+			return sessionIdentifier().hashCode();
+		}
+		catch (OlmException ex)
+		{
+			LOGGER.error("Error while receiving session identifier", ex);
+			return super.hashCode();
+		}
+	}
+	
+	/**
+	 * Compare the session identifier of this session with <code>other</code>.
+	 */
+	@Override
+	public boolean equals(Object other)
+	{
+		if (!(other instanceof OlmSession))
+			return false;
+		OlmSession o = (OlmSession) other;
+		try
+		{
+			return sessionIdentifier().equals(o.sessionIdentifier());
+		}
+		catch (OlmException ex)
+		{
+			LOGGER.error("Error while receiving session identifier", ex);
+			return super.equals(other);
+		}
+	}
 }
 
