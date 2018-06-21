@@ -7,7 +7,7 @@ can use it for every Java project, not necessarily targetting Android.
 
 ```gradle
 repositories {
-	maven { url "https://maven.devpi.de/repository/default/" }
+	maven { url "https://maven.nextgenenergy.co.nz/artifactory/maven/" }
 }
 
 dependencies {
