@@ -17,6 +17,6 @@ deploy:
   before_script:
     - git submodule update --init
   script:
-    - GRADLE_USER_HOME=.gradle gradle publish
+    - GRADLE_USER_HOME=.gradle gradle artifactoryPublish
   only:
     - master
