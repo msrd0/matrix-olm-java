@@ -18,7 +18,7 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'gradle-jni-multilib'
 
-group 'msrd0.matrix'
+group 'de.msrd0.matrix'
 version "$matrix_olm_major.$matrix_olm_minor.$matrix_olm_patch-$matrix_olm_java_rel"
 
 repositories {
@@ -30,13 +30,13 @@ repositories {
 dependencies {
 	// jni utils
 	compile "msrd0.jni:jni-multilib:0.1-SNAPSHOT"
-	
+
 	// json lib
 	compile "com.beust:klaxon:0.32"
-	
+
 	// logging lib
 	compile "org.slf4j:slf4j-api:1.7.25"
-	
+
 	// jsr305
 	compile "com.google.code.findbugs:jsr305:3.0.2"
 }
@@ -50,17 +50,17 @@ sourceSets {
 
 jni {
 	libraryName = "olm"
-	
+
 	sourceDirs = ["jni/native", "olm/src"]
 	sourceFiles = ["olm/lib/crypto-algorithms/sha256.c", "olm/lib/crypto-algorithms/aes.c", "olm/lib/curve25519-donna/curve25519-donna.c"]
 	includePath = ["olm/include", "olm/lib"]
-	
+
 	customFlags = [
 			"-DOLMLIB_VERSION_MAJOR=$matrix_olm_major",
 			"-DOLMLIB_VERSION_MINOR=$matrix_olm_minor",
 			"-DOLMLIB_VERSION_PATCH=$matrix_olm_patch"
 	]
-	
+
 	arch = [
 			new Arch(OS.LINUX, Architecture.X86_64),
 			new Arch(OS.LINUX, Architecture.X86),
@@ -82,11 +82,11 @@ publishing {
 	publications {
 		mavenJava(MavenPublication) {
 			from components.java
-			
+
 			artifact sourcesJar {
 				classifier "sources"
 			}
-			
+
 			pom.withXml {
 				asNode()
 					.appendNode('licenses')
@@ -122,4 +122,3 @@ artifactory {
 		}
 	}
 }
-
